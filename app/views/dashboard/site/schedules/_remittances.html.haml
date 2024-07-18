@@ -1,0 +1,10 @@
+.table-responsive{style: "margin-top:10px"}
+  %table#data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_site_events_path(format: :json)}}
+    %thead.bg_gray
+      %tr
+        %th Date
+        %th Type
+        %th Description
+        %th= "Amount (#{@vpd_currency.symbol})"
+        %th STATUS
+    %tbody

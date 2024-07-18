@@ -1,0 +1,161 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12
+        = form_for(@vpd, url: dashboard_vpd_vpd_path(@vpd), remote: true, html:{class: :"form-vertical edit-vpd", method: :put}) do |f|
+          #overlay
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+
+              .row
+                .col-md-8.col-sm-12{style: "padding-left:0;padding-right:0"}
+                  %label{style: "color:#c71585"}
+                    = "Auto-approval Threshold"
+                    = tooltip_link("This is the USD threshold below which all invoices submitted for payment automatically get approved for payment")
+                .col-md-4.col-sm-12
+                  .row
+                    .col-md-7.col-sm-7.col-xs-7
+                      .input-group
+                        %span.input-group-addon{style: "color:#c71585"}= "USD"
+                        - auto_amount = @vpd.auto_amount.present? && @vpd.auto_amount>0 ? @vpd.auto_amount : nil
+                        = text_field_tag :auto_amount, auto_amount, placeholder: "e.g. 10", class: :"form-control", name: "vpd[auto_amount]"
+                    .col-md-5.col-sm-5.col-xs-5
+                      = f.submit "UPDATE", class: "btn btn-primary pull-right"
+
+              .row{style: "margin-top:40px;margin-bottom:10px"}
+                .col-md-8.col-sm-12{style: "padding-left:0;padding-right:0"}
+                  %label{style: "color:#c71585"}
+                    = "Tier 1 Approval Threshold"
+                    = tooltip_link("This is the USD threshold below which can be approved by Tier 1 VPD admins listed below")
+                .col-md-4.col-sm-12
+                  .row
+                    .col-md-7.col-sm-7.col-xs-7
+                      .input-group
+                        %span.input-group-addon{style: "color:#c71585"}= "USD"
+                        - tier1_amount = @vpd.tier1_amount.present? && @vpd.tier1_amount>0 ? @vpd.tier1_amount : nil
+                        = text_field_tag :tier1_amount, tier1_amount, placeholder: "e.g. 10", class: :"form-control", name: "vpd[tier1_amount]"
+                    .col-md-5.col-sm-5.col-xs-5
+                      = f.submit "UPDATE", class: "btn btn-primary pull-right"
+              
+              .row
+                .col-lg-6.col-md-6.col-sm-6.pull-right{style: "padding:0"}
+                  .payablebuttons
+                    = link_to "Add APPROVER", new_dashboard_vpd_approver_path(@vpd)+"?approver_type=0", remote: true, class: :"btn btn-primary sm-pull-right btn-add-modal"
+
+              .row
+                .table-responsive{style: "margin-top:5px"}
+                  %table#tier1s_data_table.table.borderTB.footable{width:"100%", data:{source: dashboard_vpd_approvers_path(format: :json)+"?approver_type=0"}}
+                    %thead.bg_gray
+                      %tr
+                        %th{style: "width:50%"} Email / Name
+                        %th{style: "width:10%"} Active
+                    %tbody
+
+                #tier1s_page_description.pull-right
+
+              .row{style: "margin-top:30px;margin-bottom:10px"}
+                .col-md-8.col-sm-12{style: "padding-left:0;padding-right:0"}
+                  %label{style: "color:#c71585"}
+                    = "Tier 2 Approval Threshold"
+                    = tooltip_link("These are the VPD admins who can approve invoice payments above the Tier 1 threshold")
+                .col-md-4.col-sm-12
+                  .row
+                    .col-md-7.col-sm-7.col-xs-7
+                      .input-group
+                        %span.input-group-addon{style: "color:#c71585"}= "USD"
+                        = text_field_tag :tier2_amount, tier1_amount, placeholder: "e.g. 10", class: :"form-control", name: "vpd[tier2_amount]", disabled: true
+                    .col-md-5.col-sm-5.col-xs-5
+                      = f.submit "UPDATE", class: "btn btn-primary pull-right"
+              
+              .row
+                .col-lg-6.col-md-6.col-sm-6.pull-right{style: "padding:0"}
+                  .payablebuttons
+                    = link_to "Add APPROVER", new_dashboard_vpd_approver_path(@vpd)+"?approver_type=1", remote: true, class: :"btn btn-primary sm-pull-right btn-add-modal"
+
+              .row
+                .table-responsive{style: "margin-top:5px"}
+                  %table#tier2s_data_table.table.borderTB.footable{width:"100%", data:{source: dashboard_vpd_approvers_path(format: :json)+"?approver_type=1"}}
+                    %thead.bg_gray
+                      %tr
+                        %th{style: "width:50%"} Email / Name
+                        %th{style: "width:10%"} Active
+                    %tbody
+
+                #tier2s_page_description.pull-right
+
+/ Modal
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $("button.pull-right"), "click")
+
+  $("form.edit-vpd").on("ajax:success", function(event, data, status, xhr) {
+    if (data.success || data.failure) { 
+      if (data.success) { 
+        $("#popup_modal_title").text(data.success.msg)
+        $("#popup_modal_box .message").html("<p>VPD <strong class='text_blue'>"+ data.success.name + "</strong>'s approval has been successfully updated</p>")
+        $("#popup_modal_box").modal("show")
+      } else {
+        $(".spinner").remove()
+        
+        var element_id = data.failure.element_id
+        $("#"+ element_id).parent().parent().addClass("has-error")
+        error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+        $("#"+ element_id).parent().append(error)
+      }
+    }
+  })
+
+  $(function() {
+    tier1sTable = setup_data_table("tier1s")
+    tier2sTable = setup_data_table("tier2s")
+  })
+
+  function setup_data_table(label) {
+    var table_id = label +"_data_table";
+    dt_table = $("#"+ table_id).dataTable({
+      sPaginationType: "simple",
+      lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+      paging: false,
+      bJQueryUI: true,
+      bProcessing: true,
+      bServerSide: true,
+      aoColumnDefs: [ { "bSortable": false, "aTargets": [0, 1] } ],
+      sAjaxSource: $('#'+ table_id).data('source'),
+      fnServerParams: function (aoData) {
+        //var show_option = $("#"+ label +"_show_option").text()
+        //aoData.push({name: "show_option", value: show_option})
+        aoData.push({name: "sSearch", value: $("#"+ label +"_key").val()})
+      },
+      fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+        var res = iStart +" to "+ iEnd + " of " + iTotal + " Approvers"
+        $("#"+ label +"_page_description").html(res)
+        return ""
+      },
+      fnRowCallback: function(nRow, aData, iDisplayIndex) {
+        var id = aData[aData.length-1]
+        $(nRow).attr("id", id)
+        return nRow
+      },oLanguage: {
+        sEmptyTable: "No approvers registered"
+      },
+      responsive: true
+    })
+
+    $("#"+ table_id).removeClass("no-footer")
+    $("#"+ table_id +"_filter").css("display", "none")
+    $("#"+ table_id +"_length").css("display", "none")
+    $("#"+ table_id).next().remove()
+
+    $("#"+ table_id +"_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-left", "0")
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-right", "0")
+
+    return dt_table
+  }
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })

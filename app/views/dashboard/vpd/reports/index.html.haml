@@ -1,0 +1,100 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+              
+              .row
+                .col-lg-12
+                  .no-class{style: "float:left;margin-top:5px"}
+                    There reports are generated from a cached data set. Results in these reports may be up to 4 hours old.
+                  .payablebuttons
+                    = link_to "ADD REPORT", new_dashboard_vpd_report_path(@vpd)+"?type=#{@option_type}", remote: true, class: :"btn btn-primary sm-pull-right btn-add-modal", style: "width:150px;"
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              .table-responsive
+                %table#data_table.table.borderTB.footable{width:"100%", data:{source: dashboard_vpd_reports_path(@vpd, format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th Report Name
+                      %th Active
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;"} Include disabled
+
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :add_data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [1] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text();
+      aoData.push({name: "show_option", value: show_option});
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal;
+      $("#page_description").html(res);
+      return "";
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1];
+      $(nRow).attr("id",id);
+      return nRow;
+    },oLanguage: {
+      sEmptyTable:"No reports registered",
+      oPaginate: {
+        sPrevious: "&larr; Prev",
+        sNext: "Next &rarr;"
+      }
+    },
+    fnDrawCallback: function(oSettings) {
+      if ($("#page_description").siblings(".pager").size() > 0) {
+        $("#page_description").siblings(".pager").remove();
+      }
+      $("#data_table_paginate ul").addClass("pager sm-pull-right").removeClass("pagination").insertBefore($("#page_description"));
+    },
+    responsive: true
+  });
+  
+  $("#data_table").removeClass("no-footer");
+  $("#data_table_filter").css("display", "none");
+  $("#data_table_length label").css("display", "none");
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "");
+  $("#data_table_wrapper").children(".row").css("margin-left", "0");
+  $("#data_table_wrapper").children(".row").css("margin-right", "0");
+
+  $("#show_option").click(function(){
+    if ($(this).text() == "Include disabled"){
+      $(this).text("Exclude disabled");
+    }else{
+      $(this).text("Include disabled");
+    }
+    dt_table.fnDraw();
+  });
+
+  function show_report(url) {
+    $.ajax({
+      type: "GET",
+      url: url,
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data);
+      positionFooter();
+    }).fail(function(data) {
+      location.href = "/authorization"
+    });
+  }

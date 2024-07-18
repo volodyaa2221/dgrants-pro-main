@@ -1,0 +1,39 @@
+.modal-dialog
+  .modal-content
+    = form_for(@user, url: dashboard_vpd_user_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Edit VPD User
+
+      .modal-body
+        .form-group
+          = f.label :email, "Email Address :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = text_field(:user, :email, class: :"form-control input-sm", readonly: true)
+
+        .form-group
+          = f.label :role, "User Type :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :role, options_for_select(@user_roles, @user.role), {}, class: :"form-control input-sm"
+
+        - trial_style = @user.role > Role::ROLE[:vpd_admin]  ?  "" : "display:none"
+        - trial_id = @user.trial.present? ? @user.trial.id.to_s : nil
+        .form-group#trial_group{style: "#{trial_style}"}
+          = f.label :trial, "Trial :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :trial, options_for_select(@trial_opts, trial_id), {}, class: :"form-control input-sm"
+
+        - site_style = @user.role > Role::ROLE[:trial_readonly]  ?  "" : "display:none"
+        - site_id = @user.site.present? ? @user.site.id.to_s : nil
+        .form-group#site_group{style: "#{site_style}"}
+          = f.label :site, "Site :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :site, options_for_select(@site_opts, site_id), {}, class: :"form-control input-sm"
+
+        = hidden_field_tag :promote_to, :false, {name: :"role[promote_to]"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

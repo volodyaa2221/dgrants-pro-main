@@ -1,0 +1,40 @@
+- disabled = !current_user.trial_editable?(@site.trial) && !@site.trial_associate?(current_user)
+.modal-dialog
+  .modal-content
+    = form_for(@passthrough, url: dashboard_site_passthrough_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title EDIT PASSTHROUGH
+
+      .modal-body
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            %label.control-label{title: "#{@passthrough.description}"}= @passthrough.description.truncate(30)
+
+        .form-group
+          = f.label :site_passthrough_budget, "Budget :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            %label.control-label= @passthrough.budget_name
+
+        .form-group
+          - currency = @site.site_schedule.vpd_currency
+          = f.label :amount, "Amount(#{currency.code}) :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            %label.control-label#passthrough_amount= "#{currency.symbol} #{number_to_currency(@passthrough.amount, unit: '')}"
+
+        .form-group
+          = f.label :invoice_file, "File :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = @passthrough.invoice_file.present? ? invoice_file_link_with_icon(@passthrough.invoice_file) : ""
+
+        .form-group
+          = f.label :status, "Status :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :"passthrough[status]", options_for_select(@status), {class: :"form-control input-sm", required: true}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

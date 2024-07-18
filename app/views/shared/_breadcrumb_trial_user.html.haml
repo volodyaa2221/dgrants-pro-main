@@ -1,0 +1,52 @@
+- user = current_user
+- if params[:controller].include?("dashboard/users")
+  - if params[:action] == "profile"
+    %li.active{data:{root_label: "Dashboard"}} Dashboard: Profile
+  - elsif params[:action] == "todo_tasks"
+    %li.active{data:{root_label: "Dashboard"}} Dashboard: ToDo Tasks
+
+- elsif params[:controller] == "dashboard"
+  %li.active{data:{root_label: "Dashboard"}} Dashboard:Trials
+
+- elsif params[:controller].include?("dashboard/vpd")
+  - if @vpd.present?
+    %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path 
+    %li.active{data:{root_label: @vpd.name}}= "#{@vpd.name}:Trials"
+  - else 
+    %li.active{data:{root_label:"Dashboard"}}= "Dashboard:VPDs"
+
+- elsif params[:controller].include?("dashboard/trial")
+  - if session[:vpd_id].present? && user.super_admin?
+    %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path
+    %li= link_to "#{@trial.vpd.name}:Trials", trials_dashboard_vpd_vpd_path(@trial.vpd)
+  - else 
+    - if user.trial_level_user?
+      %li= link_to "Dashboard:Trials", dashboard_path
+    - else
+      - if user.trials.count > 1
+        %li= link_to "Dashboard:Trials", dashboard_path
+
+  - if params[:action] == "edit"
+    %li.active{data:{root_label: @trial.trial_id}}= "#{@trial.trial_id}:Trial Details"
+  - else
+    %li.active{data:{root_label: @trial.trial_id}}= "#{@trial.trial_id}:#{params[:action].capitalize}"
+
+- elsif params[:controller].include?("dashboard/site")
+  - if session[:vpd_id].present? && user.super_admin?
+    %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path
+    %li= link_to "#{@site.vpd.name}:Trials", trials_dashboard_vpd_vpd_path(@site.vpd)
+  - else
+    - if user.trial_level_user? || user.trials.count > 1
+      %li= link_to "Dashboard:Trials", dashboard_path
+  
+  %li= link_to "#{@site.trial.trial_id}:Sites", sites_dashboard_trial_trial_path(@site.trial)
+  - if params[:action] == "edit"
+    %li.active{data:{root_label: @site.site_id}}= "#{@site.site_id}:Site Details"
+  - elsif params[:action] == "statement"
+    %li.active{data:{root_label: @site.site_id}}= "#{@site.site_id}:Dashboard"
+  - elsif params[:action] == "schedule"
+    %li.active{data:{root_label: @site.site_id}}= "#{@site.site_id}:Budget"
+  - elsif params[:controller].include?("passthroughs") && params[:action] == "index"
+    %li.active{data:{root_label: @site.site_id}}= "#{@site.site_id}:Passthroughs"
+  - else
+    %li.active{data:{root_label: @site.site_id}}= "#{@site.site_id}:#{params[:action].capitalize}"

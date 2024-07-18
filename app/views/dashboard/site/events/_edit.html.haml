@@ -1,0 +1,44 @@
+- ids = [nil, "patient_id_text", "patient_id_select"]
+.modal-dialog
+  .modal-content
+    = form_for(@event, url: dashboard_site_event_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Edit Event
+
+      .modal-body
+        .form-group
+          = f.label :event_id, "Event ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :event_id, options_from_collection_for_select(@site.trial.trial_events.activated_events, :event_id, :event_id, selected: f.object.event_id), {}, {class: :"form-control input-sm", required: true, disabled: true}
+
+        = hidden_field_tag :patient_id_field, ids[@event_type]
+        = hidden_field_tag :site_event_patient_id, @event.patient_id, name: "site_event[patient_id]"
+
+        .form-group#select_formgroup{style: "#{@event_type==2 ? '' : 'display: none'}"}
+          = f.label :patient_id_select, "Patient ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            - patient_id = @event.patient_id
+            = select_tag :patient_id_select, options_for_select([[patient_id, patient_id]], patient_id), {class: :"form-control input-sm", disabled: true}
+
+        .form-group
+          = f.label :event_log_id, "Event Log ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :event_log_id, class: :"form-control input-sm", disabled: true
+
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_area :description, placeholder: "e.g. Event Description", class: :"form-control input-sm", required: true
+
+        .form-group
+          - date = @event.happened_at.present? ? @event.happened_at.strftime("%m/%d/%Y") : nil
+          = f.label :happened_at, "Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :happened_at, {value: date, placeholder: "e.g. #{(Time.now).strftime('%m/%d/%Y')}", class: :"form-control input-sm", :"data-provide" => "datepicker", :"data-parsley-pattern" => "^[0-9]{1,2}[/]{1}[0-9]{1,2}[/]{1}[0-9]{4}$", :"data-parsley-error-message" => "No valid date", required: true, disabled: true}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

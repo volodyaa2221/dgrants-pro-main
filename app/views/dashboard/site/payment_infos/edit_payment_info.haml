@@ -1,0 +1,133 @@
+- user = current_user
+- disabled = (!user.trial_editable?(@site.trial) && !@site.trial_associate?(user) && !@site.site_admin?(user)) || @country_info.present?
+
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        = form_for(@payment_info, url: @form_url, remote: true, html:{class: :"form-vertical parsley-form edit-payment-info"}) do |f|
+          .card.card--padded{data: {:"match-height"=>"card"}}
+            .collapse.in.card__collapse
+              %fieldset.fieldset
+
+                - if @country_info.present?
+                  %span.help-block
+                    %strong= "<i class='fa fa-warning'></i> #{@country_info}".html_safe
+
+                - if @site.payment_verified == Site::PAYMENT_VERIFIED[:known_bad]
+                  %span.help-block
+                    %strong= "<i class='fa fa-warning'></i> Banking information was rejected when attempting to make a payment. Please review & update.".html_safe
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :country, "Country"
+                      = f.text_field :country, class: :"form-control", disabled: true
+                      = hidden_field_tag :payment_info_country, @payment_info.country, name: "payment_info[country]"
+                
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :currency_code, "Payment Currency"
+                      = f.select :currency_code, options_for_select(@currency_codes, selected: @payment_info.currency_code), {include_blank: true}, {class: :"form-control", required: true, disabled: disabled}
+
+                .row
+                  - if @payment_info.field1_label.present?
+                    = hidden_field_tag :payment_info_field1_label, @payment_info.field1_label, name: "payment_info[field1_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field1_value, @payment_info.field1_label
+                        = f.text_field :field1_value, class: :"form-control", disabled: disabled
+
+                  - if @payment_info.field2_label.present?
+                    = hidden_field_tag :payment_info_field2_label, @payment_info.field2_label, name: "payment_info[field2_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field2_value, @payment_info.field2_label
+                        = f.text_field :field2_value, class: :"form-control", disabled: disabled
+
+                  - if @payment_info.field3_label.present?
+                    = hidden_field_tag :payment_info_field3_label, @payment_info.field3_label, name: "payment_info[field3_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field3_value, @payment_info.field3_label
+                        = f.text_field :field3_value, class: :"form-control", disabled: disabled
+
+                  - if @payment_info.field4_label.present?
+                    = hidden_field_tag :payment_info_field4_label, @payment_info.field4_label, name: "payment_info[field4_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field4_value, @payment_info.field4_label
+                        = f.text_field :field4_value, class: :"form-control", disabled: disabled
+
+                  - if @payment_info.field5_label.present?
+                    = hidden_field_tag :payment_info_field5_label, @payment_info.field5_label, name: "payment_info[field5_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field5_value, @payment_info.field5_label
+                        = f.text_field :field5_value, class: :"form-control", disabled: disabled
+
+                  - if @payment_info.field6_label.present?
+                    = hidden_field_tag :payment_info_field6_label, @payment_info.field6_label, name: "payment_info[field6_label]"
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :field6_value, @payment_info.field6_label
+                        = f.text_field :field6_value, class: :"form-control", disabled: disabled
+
+                %hr/
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :bank_name, "Bank Name"
+                      = f.text_field :bank_name, class: :"form-control", disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :bank_street_address, "Bank Street Address"
+                      = f.text_field :bank_street_address, class: :"form-control", disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :bank_city, "Bank City"
+                      = f.text_field :bank_city, class: :"form-control", disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :bank_state, "Bank State"
+                      = f.text_field :bank_state, class: :"form-control", disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :bank_postcode, "Bank Postcode"
+                      = f.text_field :bank_postcode, class: :"form-control", disabled: disabled, style: "width: 130px;"
+
+              - if !disabled
+                .card__footer
+                  .row{style: "margin-left:0;margin-right:0"}
+                    = f.submit "Save Changes", class: :"btn btn-primary ajax-button save-payment-info"
+
+
+:css
+  .datepicker{z-index: 9999 !important;}
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $(".save-payment-info"), "click");
+
+  $(".edit-payment-info").on("ajax:success", function(event, data, status, xhr) {
+    $(".spinner").remove()
+    if (data.success) {
+      $("#popup_modal_title").text("Payment Information")
+      $("#popup_modal_box .message").html("Payment information saved successfully.")
+      $("#popup_modal_box").modal("show")
+    } else {
+      var element_id = data.failure.element_id
+      $("#"+ element_id).parent().parent().addClass("has-error")
+      error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+      $("#"+ element_id).parent().append(error)
+    }
+  })

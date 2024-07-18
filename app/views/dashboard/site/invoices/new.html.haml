@@ -1,0 +1,253 @@
+- editable = current_user.site_editable?(@site)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content{style: "padding:10px 20px"}
+
+              .heading.clearfix
+                %h4.text_blue{style:"width: 100%"}
+                  = "INVOICE (CURRENT)"
+                .col-md-12.col-sm-12{style: "padding-left:0"}
+                  %h4.text_blue{style: "margin-top:0"}= link_to("Back to All Invoices", "javascript: back_to_invoices()")
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+
+              .table-responsive
+                %table#data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: new_dashboard_site_invoice_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th{style: "width:10%"} Tran ID
+                      %th{style: "width:35%"} Description
+                      %th{style: "width:15%"} Earned
+                      %th{style: "width:15%"} Holdback
+                      %th{style: "width:15%"} Payable
+                      %th{style: "width:10%"} Included
+                  %tbody
+
+              %a#show_option{href: "javascript://", style: "line-height:30px;"} Hide Excluded Transactions
+
+              .clearfix
+              .table-wrap
+                = form_for(@invoice, url: dashboard_site_invoices_path(@site), method: :post, remote: true, html: {class: :"parsley-form", multipart: true}) do |f|
+                  = hidden_field_tag :amount, @balance, name: "invoice[amount]"
+                  = hidden_field_tag :included_tax, @amounts[:payable_tax], name: "invoice[included_tax]"
+                  = hidden_field_tag :remitted, 0, name: "invoice[remitted]"
+                  = hidden_field_tag :overhead, @amounts[:overhead], name: "invoice[overhead]"
+                  = hidden_field_tag :withholding, @amounts[:withholding], name: "invoice[withholding]"
+                  = hidden_field_tag :transaction_ids, @transaction_ids.join(",")
+
+                  .invoice-table
+                    - payee_info = current_invoice_payee_info
+                    .row
+                      .col-sm-6
+                        -# .invoice-pay
+                        -#   .invoice-to
+                        -#     %p PAY TO:
+                        -#   .invoice-address
+                        -#     = payee_info[0].html_safe
+                        -#     %table.table.table-condensed
+                        -#       %tbody
+                        -#         = payee_info[1].html_safe
+                        -#         %tr
+                        -#           %td.w30
+                        -#             %p Bank Name:
+                        -#           %td= payee_info[2].html_safe
+                        -#         %tr
+                        -#           %td
+                        -#             %p Bank Address:
+                        -#           %td= payee_info[3].html_safe
+                      .col-sm-6
+                        %table.table.no-margin-bottom
+                          %tbody
+                            %tr
+                              %td#invoice
+                                .col-sm-5
+                                  %h2 Please Pay:
+                                .col-sm-7
+                                  %h2#pay_amount= "#{@symbol} #{number_to_currency(@balance, unit: '')} "
+                                  %h3#pay_tax= "(incl. #{@symbol} #{number_to_currency(@amounts[:payable_tax], unit: '')} tax)"
+                            %tr
+                              %td#invoice{style: "border:none;"}
+                                .col-sm-5
+                                  %h2 Status:
+                                .col-sm-7{style: "color:orange"}
+                                  %h2 In Progress
+                            %tr
+                              %td#invoice{style: "border:none;"}
+                                .col-sm-5{style: "margin-top:4px"}
+                                  %h2 Invoice #:
+                                .col-sm-7
+                                  = f.text_field :invoice_no, value: nil, placeholder: "e.g. 123456", class: "form-control input-sm", style: :"color:black", required: true
+                            -# %tr
+                            -#   %td#invoice{style: "border:none;"}
+                            -#     .col-sm-5{style: "margin-top:4px"}
+                            -#       %h2 Invoice Document:
+                            -#     .col-sm-7
+                            -#       = file_field_tag :invoice_file, class: "input-sm", style: "width:100%; text-overflow:ellipsis; padding: 0", disabled: !editable
+
+                            - if editable
+                              %tr
+                                %td#invoice{style: "border:none;"}
+                                  .col-sm-offset-5.col-sm-7
+                                    = button_tag(type: :submit, id: :save_invoice, class: :"btn btn-primary btn-sm") do
+                                      %b SUBMIT
+
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $("#save_invoice"), "click");
+  $("form#new_invoice").parsley("validate")
+
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    pageLength: -1,
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [0, 1, 2, 3, 4, 5] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text();
+      aoData.push({name: "show_option", value: show_option});
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]
+      $(nRow).attr("id", id)
+      if (aData[aData.length-2] != null) $(nRow).css("color", aData[aData.length-2])
+      if (aData[aData.length-3] != null) $(nRow).css("background-color", aData[aData.length-3])
+      return nRow
+    },oLanguage: {
+      sEmptyTable:"No invoices logged"
+    },
+    responsive: true
+  })
+  
+  $("#data_table").removeClass("no-footer");
+  $("#data_table_filter").css("display", "none");
+  $("#data_table_length label").css("display", "none")
+  $("#data_table").next().remove()
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  $("#show_option").click(function(){
+    if ($(this).text() == "View Excluded Transactions"){
+      $(this).text("Hide Excluded Transactions");
+    }else{
+      $(this).text("View Excluded Transactions");
+    }    
+    dt_table.fnDraw();
+  });
+
+  function goto_schedule(type) {
+    $("#nav__menu li>a[href='#schedules']").trigger("click")
+  }
+
+  $("#save_invoice").off("click").on("click", function() {
+    if ($("#invoice_invoice_no").val() == '') {
+      $(".spinner").remove()
+    } else {
+      disableButtons(true)
+    }
+  })
+
+  function back_to_invoices() {
+    $.ajax({
+      type: "GET",
+      url: "#{dashboard_site_invoices_path(@site)}",
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }
+
+  $("#right_main_content").off("click").on("click", ".btn-switch", function() {
+    toggleButton($(this))
+    var active          = $(this).find(".active"),
+        transactionId   = active.data("id")
+        included        = active.data("included"),
+        url             = $(this).data("update-url"),
+        transactionIds  = $('#transaction_ids').val().split(','),
+        targetIndex     = -1
+
+    if (included == 0) {
+      targetIndex     = transactionIds.indexOf(transactionId)
+      transactionIds.splice(targetIndex, 1)
+    } else {
+      transactionIds.push(transactionId)
+    }
+    
+    $.ajax({
+      type: "POST",
+      url: url,
+      data: {transaction_id:transactionId, included:included, transaction_ids:transactionIds }
+    }).done(function( data ) {
+      if (data.success) {
+        var rowIds = {subtotal: "row_subtotal", overhead: "row_overhead", 
+                  withholding: "row_withholding", transaction_total: "row_total", 
+                  balance_forward: "row_balance_brought_forward", total: "row_balance" }
+        var table_data = data.success.table_data
+        for (var k in table_data) {
+          row_id = rowIds[k]
+          row_data = table_data[k]
+          if (row_data) {
+            $('tr#'+row_id+' td:nth-child(3)').html(row_data[2])
+            $('tr#'+row_id+' td:nth-child(4)').html(row_data[3])
+            $('tr#'+row_id+' td:nth-child(5)').html(row_data[4])
+          } else {
+            if (row_id == "row_overhead" || row_id == "row_withholding") {
+              $('#'+row_id).remove()
+            }
+          }
+        }
+
+        form_data = data.success.form_data
+        $('#amount').val(form_data.amount)
+        $('#included_tax').val(form_data.included_tax)
+        $('#overhead').val(form_data.overhead)
+        $('#withholding').val(form_data.withholding)
+        $('#pay_amount').html(form_data.pay_amount) 
+        $('#pay_tax').html(form_data.pay_tax)
+        $('#transaction_ids').val(transactionIds.join(','))
+        if (included == 0) {
+          if ($("#show_option").text() == 'View Excluded Transactions') {
+            $('#row_'+transactionId).remove()
+          } else {
+            $('#row_'+transactionId).css('background-color', 'lightgrey')
+          }
+        } else {
+          $('#row_'+transactionId).css('background-color', '')
+        }
+      } else {
+        $("#popup_modal_title").text("Invoice Error")
+        $("#popup_modal_box .message").html("<p>"+data.failure.msg+".</p>")
+        $("#popup_modal_box").modal("show")
+      }
+      disableButtons(false)
+    }).fail(function(data) {
+      location.href = "/authorization"
+    });
+
+    $(this).find(".btn").toggleClass("btn-default");
+  });
+
+  function disableButtons(disabled) {
+    if (disabled) {
+      $('.btn-switch').attr('disabled', true)
+      $('#save_invoice').attr('disabled', true)
+    } else {
+      $('.btn-switch').removeAttr('disabled')
+      $('#save_invoice').removeAttr('disabled')
+    }
+  }

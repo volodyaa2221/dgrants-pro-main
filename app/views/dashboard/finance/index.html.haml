@@ -1,0 +1,171 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+
+              .row
+                .col-lg-3.col-md-3.col-sm-3
+                  .form-group
+                    .input-group
+                      %input.form-control{type: "text", id: "key", placeholder: "Keyword..."}
+                        %span.input-group-btn
+                          %button.btn.btn-default{type: "button", id: "btn_search"}
+                            %i.fa.fa-search.fa-fw.dd-menu__icon
+
+              .clearfix
+              .row.finance-input-row
+                .col-md-6.col-sm-6.col-xs-12
+                  .col-lg-12{style: "padding-left:0"}
+                    %h3#total_money{style: "margin-top:0;margin-left:0"}= "USD    #{number_to_currency(@total_balance, unit: '$')}"
+                  .col-lg-12{style: "padding:0 0 5px 0"}
+                    .col-md-6.col-sm-6.col-xs-6{style: "padding:0"}
+                      = link_to "Download Pay file",  dashboard_payfile_path(format: :csv), class: :"btn btn-primary", style: "margin-bottom:10px"
+                    .col-md-6.col-sm-6.col-xs-6{style: "padding:0"}
+                      = link_to "Upload Recon file",  dashboard_new_upload_path, remote: true, class: :"btn btn-primary pull-right", style: "margin-bottom:10px"
+                .col-md-6.col-sm-6.col-xs-12
+                  .col-lg-12{style:"border:2px solid black"}
+                    %form#finance_form.parsley-form{action: dashboard_save_finance_path, method: :post, :"data-remote" => :true}
+                      %table
+                        %tr
+                          %td{style: "width:30%;padding:5px 10px"} 
+                            %b ACTION
+                          %td{style: "width:40%;padding:5px 10px"}
+                            = select_tag :post_type, options_for_select([["CREDIT", 0], ["DEBIT", 1]]), {class: :"form-control", name: :"post[type]"}
+                          %td{rowspan: 2}
+                        %tr
+                          %td{style: "padding:5px 10px"} 
+                            %b REFID
+                          %td{style: "padding:5px 10px"}
+                            = text_field_tag :post_ref_id, nil, placeholder: "e.g. 0000000", class: :"form-control", name: :"post[ref_id]", required: true
+                        %tr
+                          %td{style: "padding:5px 10px"}  
+                            %b AMOUNT(USD)
+                          %td{style: "padding:5px 10px"}
+                            = text_field_tag :post_amount, nil, placeholder: "e.g. 100", class: :"form-control", name: :"post[amount]", required: true
+                          %td{style: "padding:5px 10px"} 
+                            %button.btn.btn-warning.pull-right SUBMIT
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              .table-responsive
+                %table#data_table.table.borderTB.footable{width:"100%", data:{source: dashboard_finance_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th REFID
+                      %th VPD / TRIAL SHORT NAME
+                      %th PRE-POST
+                      %th PAID
+                      %th BALANCE
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;"} Include disabled
+
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    order: [1, 'asc'],
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text()
+      aoData.push({name: "show_option", value: show_option})
+      aoData.push({name: "sSearch", value: $("#key").val()})
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal;
+      $("#page_description").html(res)
+      return ""
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex){
+      var id = aData[aData.length-1]
+      $(nRow).attr("id",id)
+      return nRow
+    },oLanguage: {
+      sEmptyTable:"No accounts registered",
+      oPaginate: {
+        sPrevious: "&larr; Prev",
+        sNext: "Next &rarr;"
+      }
+    },
+    fnDrawCallback: function(oSettings) {
+      if ($("#page_description").siblings(".pager").size() > 0) {
+        $("#page_description").siblings(".pager").remove()
+      }
+      $("#data_table_paginate ul").addClass("pager sm-pull-right").removeClass("pagination").insertBefore($("#page_description"))
+    },
+    responsive: true
+  })
+  
+  $("#data_table").removeClass("no-footer")
+  $("#data_table_filter").css("display", "none")
+  $("#data_table_length label").css("display", "none")
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  $("#show_option").click(function() {
+    if ($(this).text() == "Include disabled") {
+      $(this).text("Exclude disabled")
+    } else {
+      $(this).text("Include disabled")
+    }    
+    dt_table.fnDraw()
+  })
+
+
+  $("#btn_search").click(function(){
+    dt_table.fnDraw()
+  })
+
+  $("#key").change(function(){
+    dt_table.fnDraw()
+  })
+
+  $("form.parsley-form").off("ajax:success").on("ajax:success", function(event, data, status, xhr) {
+    if (data.success) { 
+      $("#post_ref_id").val('')
+      $("#post_amount").val('')
+
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html("<p>New posting has been successfully added into account for <strong class='text_blue'>"+ data.success.name +"</strong></p>")
+      $("#popup_modal_box").modal("show")
+
+      $("#total_money").text(data.success.total_money)
+      dt_table.fnDraw()
+
+    } else {
+      $(".spinner").remove()
+      
+      $("#popup_modal_title").text("Submission Failure")
+      $("#popup_modal_box .message").html(data.failure.msg)
+      $("#popup_modal_box").modal("show")
+    }
+  })
+
+  function show_finance(url) {
+    $.ajax({
+      type: "GET",
+      url: url,
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }

@@ -1,0 +1,54 @@
+$("#data_modal").html("<%= escape_javascript(render 'dashboard/trial/events/new')%>").modal()
+
+$(".parsley-form").parsley("validate");
+
+$("form#new_trial_event").submit(function() {
+  var valid = true
+  if ($("#trial_event_dependency").val() != ''  &&  $("#trial_event_days").val() == '') {
+    $("input#trial_event_days").addClass("parsley-error")
+    valid = false
+  } else {
+    $("input#trial_event_days").removeClass("parsley-error")
+  }
+
+  if (!valid) $(".spinner").remove()
+  return valid
+})
+
+$("form#new_trial_event").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Event <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully added</p>")
+    $("#popup_modal_box").modal("show")
+
+    if (data.success.type == 0) {
+      $("#single_events_initial_load").val(1)
+      single_events_dt_table.fnDraw()
+    } else {
+      $("#patient_events_initial_load").val(1)
+      patient_events_dt_table.fnDraw()
+    }
+
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})
+
+$("#trial_event_dependency").change(function(event) {
+  if ($(this).val() != '') {
+    $("#days").css("display", "")
+    $("#trial_event_days").attr("required", "required")
+  } else {
+    $("#days").css("display", "none")
+    $("#trial_event_days").removeAttr("required")
+  }
+});

@@ -1,0 +1,18 @@
+.modal-dialog
+  .modal-content
+    = form_for(@category, url: dashboard_vpd_ledger_category_path, remote: true, html:{class: :"form-horizontal parsley-form edit-data"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Edit Category
+
+      .modal-body
+        .form-group
+          = f.label :name, "Category Name :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :name, placeholder: "e.g. DIAGNOSTICS", required: true, class: :"form-control input-sm"
+
+        .modal-footer
+          = button_tag(type: :submit, class: :"btn btn-primary") do
+            Save
+            %i.fa.fa-angle-double-right
+          %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

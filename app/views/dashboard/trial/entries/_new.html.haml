@@ -1,0 +1,70 @@
+- currency_code = @schedule.vpd_currency.present? ? @schedule.vpd_currency.code : ''
+.modal-dialog
+  .modal-content
+    = form_for(@entry, url: dashboard_trial_entries_path(@trial), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title= "Add #{@type==0 ? 'Static' : 'Patient'} Payment Entry"
+
+      .modal-body
+        .form-group
+          = f.label :event_id, "Event ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :event_id, options_from_collection_for_select(@event_ids, :event_id, :event_id), {}, {class: :"form-control input-sm"}
+
+        = hidden_field_tag :trial_entry_type, @type, name: "trial_entry[type]"
+        = hidden_field_tag :trial_schedule, @schedule.id.to_s, name: "trial_entry[trial_schedule_id]"
+        = hidden_field_tag :allow_overlap_dates, false, name: "allow_overlap_dates"
+
+        .form-group
+          = f.label :vpd_ledger_category_id, "Ledger Category :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :vpd_ledger_category_id, options_for_select(@categories), {}, {class: :"form-control input-sm"}
+
+        .form-group
+          = f.label :amount, "Amount (#{currency_code}):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :amount, value: nil, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :tax_rate, "Tax (%):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :tax_rate, value: @tax_rate, placeholder: "e.g. 10", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :holdback_rate, "Holdback (%):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :holdback_rate, value: @holdback_rate, placeholder: "e.g. 10", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :advance, "Advance (#{currency_code}):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :advance, value: nil, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :event_cap, "Event CAP:", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :event_cap, placeholder: "e.g. 100", class: :"form-control input-sm", "data-parsley-type"=>"number"
+
+        - date = (Time.now).strftime('%m/%d/%Y')
+        .form-group
+          = f.label :start_date, "Start Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :start_date, {value: nil, placeholder: "e.g. #{date}", class: :"form-control input-sm date-picker", :"data-type" => "date", :"data-provide" => "datepicker"}
+
+        .form-group
+          = f.label :end_date, "End Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :end_date, {value: nil, placeholder: "e.g. #{date}", class: :"form-control input-sm date-picker", :"data-type" => "date", :"data-provide" => "datepicker"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel
+
+
+:javascript
+  $(document).ready(function() {
+    $(".date-picker").datepicker({dateFormat: "mm/dd/yy"})
+  })

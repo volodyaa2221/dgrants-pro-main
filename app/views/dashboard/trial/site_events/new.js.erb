@@ -1,0 +1,85 @@
+$("#data_modal").html("<%= escape_javascript(render '/dashboard/trial/site_events/new')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form#new_site_event").submit(function() {
+  var field = $("#patient_id_field").val()
+  if (field.length > 0) {
+    $("#site_event_patient_id").val($("#"+ field).val())
+  } else {
+    $("#site_event_patient_id").val(null)
+  }
+
+  return true
+})
+
+$("form#new_site_event").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Event <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully added</p>")
+    $("#popup_modal_box").modal("show")
+
+    $("#site_event_initial_load").val(1)
+    dt_table.fnDraw()
+
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})
+
+var event_descriptions  = <%= @event_descriptions.to_json.html_safe %>
+var patient_event_ids   = <%= @patient_event_ids.to_json.html_safe %>
+
+$("select#site_event_site_id").change(function() {
+  var site_id = $(this).val()
+  if (site_id == '') return
+  $.ajax({
+    type: "GET",
+    url:  "/dashboard/trial/<%= @trial.id.to_s %>/site_events/site_options", 
+    data: {"site_id": site_id}
+  }).success(function(data) {
+    $("select#patient_id_select").html(data.success.patient_ids)
+  }).fail(function(data) {
+    $("#popup_modal_title").text("Failure")
+    $("#popup_modal_box .message").html("<p>Can't update forecastings now. Try again later</p>")
+    $("#popup_modal_box").modal("show")
+  })
+})
+
+$("select#site_event_event_id").change(function() {
+  var event_id = $(this).val()
+  $("#site_event_description").val(event_descriptions[event_id])
+  if ($.inArray(event_id, patient_event_ids) > -1) {
+    if (event_id == "CONSENT") {
+      $("#patient_id_select").attr("required", false)
+      $("#select_patient_formgroup").css("display", "none")
+      $("#patient_id_text").attr("required", true)
+      $("#select_next_patient_formgroup").css("display", '')
+
+      $("#patient_id_field").val("patient_id_text")
+    } else {
+      $("#patient_id_select").attr("required", true)
+      $("#select_patient_formgroup").css("display", '')
+      $("#patient_id_text").attr("required", false)
+      $("#select_next_patient_formgroup").css("display", "none")
+
+      $("#patient_id_field").val("patient_id_select")
+    }
+  } else {
+    $("#patient_id_select").attr("required", false)
+    $("#select_patient_formgroup").css("display", "none")
+    $("#patient_id_text").attr("required", false)
+    $("#select_next_patient_formgroup").css("display", "none")
+
+    $("#patient_id_field").val(null)
+  }
+})

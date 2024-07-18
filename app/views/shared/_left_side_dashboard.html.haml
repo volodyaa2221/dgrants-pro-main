@@ -1,0 +1,36 @@
+%li{class: "#{(params[:controller].include?('dashboard/trial') || (params[:controller]=='dashboard' && params[:action]=='index')) ? 'active' : ''}"}
+  = link_to "<i class='fa fa-paperclip fa-fw dd-menu__icon'></i>Trials".html_safe, "#trials", data:{url: dashboard_path + ajax_url_suffix}, class: :"event-button"
+
+- user = current_user
+- if user.super_admin?
+  %li{class: "#{params[:controller]=='dashboard/users' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-users fa-fw dd-menu__icon'></i>Directory".html_safe, "#users", data:{url: dashboard_users_path + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/vpd/vpds' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>VPDs".html_safe, "#vpds", data:{url: dashboard_vpd_vpds_path + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/sponsors' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>Sponsors".html_safe, "#sponsors", data:{url: dashboard_sponsors_path + ajax_url_suffix}, class: :"event-button"
+  
+  %li{class: "#{params[:controller]=='dashboard/countries' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>Countries".html_safe, "#countries", data:{url: dashboard_countries_path + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/currencies' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>Currencies".html_safe, "#currencies", data:{url: dashboard_currencies_path + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/finance' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>Finance".html_safe, "#accounts", data:{url: dashboard_finance_path + ajax_url_suffix}, class: :"event-button"
+
+- elsif user.vpd_admin?
+  %li{class: "#{params[:controller]=='dashboard/vpd/users' ? 'active' : ''}"}    
+    = link_to "<i class='fa fa-users fa-fw dd-menu__icon'></i>Directory".html_safe, "#vpd_users", data:{url: dashboard_vpd_users_path(user.vpd) + ajax_url_suffix}, class: :"event-button"
+ 
+  %li{class: "#{params[:controller]=='dashboard/vpd/events' ? 'active' : ''}"}    
+    = link_to "<i class='fa fa-pencil fa-fw dd-menu__icon'></i>Event Types".html_safe, "#events", data:{url: dashboard_vpd_events_path(user.vpd) + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/vpd/reports' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-bar-chart fa-fw dd-menu__icon'></i>Reports".html_safe, "#reports", data:{url: dashboard_vpd_reports_path(user.vpd) + ajax_url_suffix}, class: :"event-button"
+
+
+  %li{class: "#{(params[:controller]=='dashboard/vpd/vpds' && params[:action]=='configs') ? 'active' : ''}"}
+    = link_to "<i class='fa fa-cogs fa-fw dd-menu__icon'></i>Setup".html_safe, "#setup", data:{url: configs_dashboard_vpd_vpd_path(user.vpd) + ajax_url_suffix}, class: :"event-button"    

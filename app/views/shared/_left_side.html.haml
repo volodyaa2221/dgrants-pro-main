@@ -1,0 +1,19 @@
+#nav__menu
+  %ul.list-unstyled
+    - if params[:controller].include?("dashboard/users")  &&  (params[:action] == "profile" || params[:action] == "todo_tasks")
+      = render "shared/left_side_common"
+      / If controller is dashboard(user enters dashboard page), use left_side layout for dashboard
+    - elsif params[:controller] == "dashboard" 
+      = render "shared/left_side_dashboard"
+      / If controller is vpds and action is index(user enters dashboard page, as vpds#index is menu of dashboard), use left_side layout for dashboard panel
+    - elsif params[:controller].include?("dashboard/vpd")  &&  params[:action] == "index"
+      = render "shared/left_side_dashboard"
+      / If controller is vpds and action isn't index(user enters vpd page), use left_side layout for vpd panel
+    - elsif params[:controller].include?("dashboard/vpd")  &&  params[:action] != "index"
+      = render "shared/left_side_vpds"
+      / If controller is trials(user enters trial page), use left_side layout for trial
+    - elsif params[:controller].include?("dashboard/trial")
+      = render "shared/left_side_trial"
+      / If controller is sites(user enters site page), use left_side layout for site
+    - elsif params[:controller].include?("dashboard/site")
+      = render "shared/left_side_site"

@@ -1,0 +1,23 @@
+.modal-dialog
+  .modal-content
+    = form_tag(dashboard_site_authenticate_path(@site), remote: true, method: :post, class: :"form-horizontal parsley-form") do 
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title= "Authenticate with another TA"
+
+      .modal-body
+        .form-group
+          %label.col-sm-4.control-label Email :
+          .col-sm-6
+            = email_field_tag :email, nil, placeholder: "new.user@example.com", class: :"form-control input-sm", required: true
+
+        .form-group
+          %label.col-sm-4.control-label Password :
+          .col-sm-6
+            = password_field_tag :password, nil, class: :"form-control input-sm", required: true
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Authenticate
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

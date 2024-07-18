@@ -1,0 +1,16 @@
+.table-responsive{style: "margin-top:10px"}
+  %table#static_entries_data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_trial_entries_path(format: :json)+ "?schedule=#{@schedule.id.to_s}&entry_type=0"}}
+    %thead.bg_gray
+      %tr
+        %th{style: "width:20%"} EVENT
+        %th{style: "width:5%"} $
+        %th{style: "width:10%"} PAYABLE
+        %th{style: "width:10%"} TAX
+        %th{style: "width:5%"} $
+        %th{style: "width:10%"} ADVANCE
+        %th{style: "width:25%"} EFFECTIVE
+        %th{style: "width:10%"} CAP
+        %th{style: "width:5%"} 
+    %tbody
+
+#static_entries_page_description

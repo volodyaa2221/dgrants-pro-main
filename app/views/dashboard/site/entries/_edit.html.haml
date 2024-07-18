@@ -1,0 +1,71 @@
+- currency_code = @site.site_schedule.vpd_currency.code
+.modal-dialog
+  .modal-content
+    = form_for(@entry, url: dashboard_site_entry_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title= "Edit #{@entry.type==0 ? 'Static' : 'Patient'} Payment Entry"
+
+      .modal-body
+        .form-group
+          = f.label :event_id, "Event ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :event_id, placeholder: "e.g. CONTRACT", class: :"form-control input-sm", required: true
+
+        = hidden_field_tag :site_entry_type, @entry.type, name: "site_entry[type]"
+        = hidden_field_tag :allow_overlap_dates, false, name: "allow_overlap_dates"
+
+        .form-group
+          = f.label :vpd_ledger_category_id, "Ledger Category :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            - category = @entry.vpd_ledger_category_id.present? ? @entry.vpd_ledger_category_id.to_s : nil
+            = f.select :vpd_ledger_category_id, options_for_select(@categories, category), {}, {class: :"form-control input-sm"}
+
+        .form-group
+          = f.label :amount, "Amount (#{currency_code}):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :amount, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :tax_rate, "Tax (%):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :tax_rate, placeholder: "e.g. 10", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :holdback_rate, "Holdback (%):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :holdback_rate, placeholder: "e.g. 10", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :advance, "Advance (#{currency_code}):", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :advance, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :event_cap, "Event CAP:", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :event_cap, placeholder: "e.g. 100", class: :"form-control input-sm", "data-parsley-type"=>"number"
+
+        - date = (@entry.start_date.nil?  ||  @entry.start_date == TrialEntry::DATE[:forever_start]) ? '' : @entry.start_date.strftime('%m/%d/%Y')
+        .form-group
+          = f.label :start_date, "Start Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :start_date, {value: date, placeholder: "e.g. #{(Time.now).strftime('%m/%d/%Y')}", class: :"form-control input-sm date-picker", :"data-type" => "date", :"data-provide" => "datepicker"}
+
+        - date = (@entry.end_date.nil?  ||  @entry.end_date == TrialEntry::DATE[:forever_end]) ? '' : @entry.end_date.strftime('%m/%d/%Y')
+        .form-group
+          = f.label :end_date, "End Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :end_date, {value: date, placeholder: "e.g. #{(Time.now).strftime('%m/%d/%Y')}", class: :"form-control input-sm date-picker", :"data-type" => "date", :"data-provide" => "datepicker"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel
+
+
+:javascript
+  $(document).ready(function() {
+    $(".date-picker").datepicker({dateFormat: "mm/dd/yy"})
+  })

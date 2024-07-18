@@ -1,0 +1,33 @@
+.card.card--padded.card--collapsible
+  .card__header
+    .card__header__content
+      
+      .row
+        .col-lg-3.col-md-3.col-sm-3
+          .form-group
+            .input-group
+              %input.form-control{type: "text", id: "patient_events_key", placeholder: "Keyword..."}
+                %span.input-group-btn
+                  %button.btn.btn-default{type: "button", id: "patient_events_btn_search"}
+                    %i.fa.fa-search.fa-fw.dd-menu__icon
+
+        .col-lg-9.col-md-9.col-sm-9
+          .payablebuttons
+            = link_to "Add Visit/Procedure Event", new_dashboard_trial_event_path+"?type=#{VpdEvent::TYPE[:patient_event]}", remote: true, class: :"btn btn-primary sm-pull-right btn-add-modal", style: "width:200px;"
+            = hidden_field_tag :patient_events_initial_load, 1, name: "patient_events_initial_load"
+
+  .collapse.in.card__collapse
+    .card__content.card__content--unpadded{style: "padding:20px;"}
+      .table-responsive
+        %table#patient_events_table.table.borderTB.footable{width:"100%", data:{source: dashboard_trial_events_path(format: :json)+"?type=#{VpdEvent::TYPE[:patient_event]}"}}
+          %thead.bg_gray
+            %tr
+              %th{style:"width:10%"} Order
+              %th{style:"width:22%"} Event ID
+              %th{style:"width:30%"} Description
+              %th{style:"width:23%"} Dependency
+              %th{style:"width:15%"} Active
+          %tbody
+
+      #patient_events_page_description.pull-right
+      %a#patient_events_show_option{href: "javascript://"} Include disabled

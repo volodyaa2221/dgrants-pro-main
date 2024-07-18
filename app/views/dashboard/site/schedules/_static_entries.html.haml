@@ -1,0 +1,15 @@
+.table-responsive{style: "margin-top:10px"}
+  %table#static_entries_data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_site_entries_path(format: :json)+ "?entry_type=0"}}
+    %thead.bg_gray
+      %tr
+        %th{style: "width:15%"} EVENT
+        %th{style: "width:3%"} $
+        %th{style: "width:10%"} VALUE
+        %th{style: "width:8%"} VAT
+        %th{style: "width:3%"} $
+        %th{style: "width:8%"} ADVANCE
+        %th{style: "width:20%"} EFFECTIVE
+        %th{style: "width:9%"} CAP
+        %th{style: "width:20%"} PAID EVENTS
+        %th{style: "width:5%"} 
+    %tbody

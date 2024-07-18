@@ -1,0 +1,20 @@
+$("#data_modal").html("<%= escape_javascript(render '/dashboard/site/invoices/edit')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form.edit-form").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+    dt_table.fnDraw()
+    
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})

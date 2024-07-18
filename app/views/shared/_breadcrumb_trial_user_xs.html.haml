@@ -1,0 +1,56 @@
+%li.dropdown
+  %span#dropLogin{data:{toggle:"dropdown"}} 
+    %label.caption
+      - if params[:controller].include?("dashboard/users")
+        - if params[:action] == "profile"
+          Dashboard: Profile
+        - elsif params[:action] == "todo_tasks"
+          Dashboard: ToDo Tasks
+      - elsif params[:controller] == "dashboard"
+        Dashboard:Trials
+
+      - elsif params[:controller].include?("dashboard/vpd")
+        - if @vpd.present?
+          = "#{@vpd.name}:Trials"
+        - else 
+          = "Dashboard:VPDs"
+
+      - elsif params[:controller].include?("dashboard/trial")
+        - if params[:action] == "edit"
+          = "#{@trial.trial_id}:Trial Details"
+        - else
+          = "#{@trial.trial_id}:#{params[:action].capitalize}"
+  
+      - elsif params[:controller].include?("dashboard/site")
+        - if params[:action] == "edit"
+          = "#{@site.site_id}:Site Details"
+        - elsif params[:action] == "statement"
+          = "#{@site.site_id}:Dashboard"
+        - elsif params[:action] == "schedule"
+          = "#{@site.site_id}:Budget"
+        - elsif params[:controller].include?("passthroughs") && params[:action] == "index"
+          = "#{@site.site_id}:Passthroughs"
+        - else
+          = "#{@site.site_id}:#{params[:action].capitalize}"
+
+    %span.caret
+  
+  %ul.dropdown-menu{role:"menu"}
+    - if params[:controller].include?("dashboard/vpd")
+      %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path
+
+    - elsif params[:controller].include?("dashboard/trial")
+      - if session[:vpd_id].present? && current_user.super_admin?
+        %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path
+        %li= link_to "#{@trial.vpd.name}:Trials", trials_dashboard_vpd_vpd_path(@trial.vpd)
+      - else 
+        %li= link_to "Dashboard:Trials", dashboard_path
+      
+    - elsif params[:controller].include?("dashboard/site")
+      - if session[:vpd_id].present? && current_user.super_admin?
+        %li= link_to "Dashboard:VPDs", dashboard_vpd_vpds_path
+        %li= link_to "#{@site.vpd.name}:Trials", trials_dashboard_vpd_vpd_path(@site.vpd)
+      -else
+        %li= link_to "Dashboard:Trials", dashboard_path
+
+      %li= link_to "#{@site.trial.trial_id}:Sites", sites_dashboard_trial_trial_path(@site.trial)

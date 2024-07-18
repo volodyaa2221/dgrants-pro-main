@@ -1,0 +1,38 @@
+$("#data_modal").html("<%= escape_javascript(render 'dashboard/site/passthrough_budgets/edit')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form.edit-form").submit(function(data) {
+  var max_amount = $("#site_passthrough_budget_max_amount").val(),
+      monthly_amount = $("#site_passthrough_budget_monthly_amount").val()
+  if ((max_amount.length == 0 || parseFloat(max_amount) == 0) && (monthly_amount.length == 0 || parseFloat(monthly_amount) == 0)) {
+    $(".spinner").remove()
+
+    var error = "<center><span class='help-block'><strong class='text_black'>Please fill in either of the maximum values.</strong></span></center>"
+    $(".modal-body").prepend(error)
+
+    return false
+  }
+  return true
+})
+
+$("form.edit-form").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Passthrough Budget for <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully updated</p>")
+    $("#popup_modal_box").modal("show")
+
+    passthroughBudgetsTable.fnDraw()
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})

@@ -1,0 +1,17 @@
+$("#data_modal").html("<%= escape_javascript(render 'dashboard/site/schedules/new_authenticate')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form.parsley-form").on("ajax:success", function(event, data, status, xhr) {
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+    reloadSchedulePage(false)
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})

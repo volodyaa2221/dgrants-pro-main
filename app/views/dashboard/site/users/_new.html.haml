@@ -1,0 +1,28 @@
+.modal-dialog
+  .modal-content
+    = form_for(@user, url: dashboard_site_users_path(@site), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Invite Site User
+
+      .modal-body
+        .form-group
+          = f.label :email, "Email Address ", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.email_field :email, placeholder: "e.g. new.user@example.com", required: true, :"data-parsley-trigger"=>"change", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :role, "Role :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            - if current_user.site_editable?(@site)
+              - roles = [["Monitor", Role::ROLE[:trial_associate]], ["Site Admin", Role::ROLE[:site_admin]], ["Site Admin(Read Only)", Role::ROLE[:site_readonly]], ["Site User", Role::ROLE[:site_user]]]
+            - else
+              - roles = [["Site Admin", Role::ROLE[:site_admin]], ["Site Admin(Read Only)", Role::ROLE[:site_readonly]], ["Site User", Role::ROLE[:site_user]]]
+
+            = select_tag :role, options_for_select(roles), {name: :"user[role]", class: :"form-control input-sm"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

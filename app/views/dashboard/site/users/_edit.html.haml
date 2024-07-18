@@ -1,0 +1,26 @@
+.modal-dialog
+  .modal-content
+    = form_for(@user, url: dashboard_site_user_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Edit User 
+
+      .modal-body
+        .form-group
+          = f.label :user, "Email Address :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = text_field(:user, :email, class: :"form-control input-sm", readonly: true)
+            
+        .form-group
+          = f.label :role, "Role :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            - roles = [["Monitor", Role::ROLE[:trial_associate]], ["Site Admin", Role::ROLE[:site_admin]], ["Site Admin(Read Only)", Role::ROLE[:site_readonly]], ["Site User", Role::ROLE[:site_user]]]
+            = f.select :role, options_for_select(roles, @user.role), {}, class: :"form-control input-sm"
+
+        = hidden_field_tag :promote_to, :false, {name: :"role[promote_to]"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

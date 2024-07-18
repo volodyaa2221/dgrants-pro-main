@@ -1,0 +1,21 @@
+.modal-dialog
+  .modal-content
+    = form_tag dashboard_reconfile_path, method: :post, multipart: true, remote: true, class: :"form-horizontal parsley-form", id: :"upload_reconfile_form", data:{ajax: true} do
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Reconciliation File from Tipalti
+        
+      .modal-body
+        .form-group
+          %label.col-sm-12= "Please select and upload reconciliation file from tipalti as CSV format"
+          
+        .form-group
+          %label.col-sm-4.control-label CSV file
+          .col-sm-6{style: :"padding-top: 5px;"}
+            = file_field_tag :csv_file, required: true
+
+      .modal-footer
+        %button.btn.btn-primary.upload-file-button
+          Upload
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

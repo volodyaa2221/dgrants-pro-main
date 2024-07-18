@@ -1,0 +1,13 @@
+$("form#new_invoice span.help-block").remove()
+$(".spinner").remove()
+<% if @result[:success] %>
+  $("#nav__menu li>a[href='#invoices']").trigger("click")
+
+  $("#popup_modal_title").text("<%= @result[:msg] %>")
+  $("#popup_modal_box .message").html("<p>Invoice <strong class='text_blue'><%= @result[:name] %></strong> has been successfully submitted</p>");
+  $("#popup_modal_box").modal("show")
+<% else %>
+  $("#popup_modal_title").text("Failed to Invoice Submission")
+  $("#popup_modal_box .message").html("<p><%= @result[:msg] %></p>");
+  $("#popup_modal_box").modal("show")
+<% end %>

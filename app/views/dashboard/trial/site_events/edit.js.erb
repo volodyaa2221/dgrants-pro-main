@@ -1,0 +1,37 @@
+$("#data_modal").html("<%= escape_javascript(render '/dashboard/trial/site_events/edit')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form.edit-form").submit(function() {
+  var field = $("#patient_id_field").val()
+  if (field.length > 0) {
+    $("#site_event_patient_id").val($("#"+ field).val())
+  } else {
+    $("#site_event_patient_id").val(null)
+  }
+
+  return true
+})
+
+$("form.edit-form").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Event <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully updated</p>");
+    $("#popup_modal_box").modal("show")
+
+    $("#site_event_initial_load").val(1)
+    dt_table.fnDraw()
+
+  } else {
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})

@@ -1,0 +1,26 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded{data: {:"match-height"=>"card"}}
+          .collapse.in.card__collapse
+            .card__content{data: {:"match-height"=>"card__content"}}
+              .row
+                .col-md-8.col-sm-6
+                .col-md-4.col-sm-6
+                  - configs = [["Mail Templates", dashboard_vpd_mail_templates_path(@vpd) + ajax_url_suffix], ["Sponsors", dashboard_vpd_sponsors_path(@vpd) + ajax_url_suffix], ["Countries", dashboard_vpd_countries_path(@vpd) + ajax_url_suffix], ["Currencies", dashboard_vpd_currencies_path(@vpd) + ajax_url_suffix], ["LEDGER CATEGORIES",  dashboard_vpd_ledger_categories_path(@vpd) + ajax_url_suffix], ["APPROVALS",  dashboard_vpd_approvals_path(@vpd) + ajax_url_suffix], ["REPORTS", reports_dashboard_vpd_vpd_path(@vpd) + ajax_url_suffix]]
+                  = select_tag :configs, options_for_select(configs), class: "form-control input-md"
+              .row.config-panel{style: "margin-top: 10px;"}
+
+:javascript
+  $(".config-panel").load($("#configs").val());
+  $("#configs").change(function(){
+    url = $(this).val();
+    if(url != ""){
+      $(".config-panel").load(url);
+    } else {
+      $(".config-panel").html("");
+    }    
+  });

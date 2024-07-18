@@ -1,0 +1,22 @@
+.modal-dialog
+  .modal-content
+    = form_for(@report, url: dashboard_vpd_reports_path, remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#add_data_title Add Report
+
+      .modal-body
+        .form-group
+          = f.label :name, "Report Name :", class: "col-sm-3 control-label"
+          .col-sm-8
+            = f.text_field :name, class: "form-control input-sm", required: true
+        .form-group
+          = f.label :url, "Embed URL :", class: "col-sm-3 control-label"
+          .col-sm-8
+            = f.url_field :url, class: "form-control input-sm", required: true, "data-parsley-type" => "url"
+
+      .modal-footer
+        = button_tag(type: :submit, class: "btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

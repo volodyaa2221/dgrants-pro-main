@@ -1,0 +1,42 @@
+.login
+  .login__banner
+    .container
+      %h1.login__heading
+        = image_tag "logo.png", class: "login__brand", alt: nil
+    
+  .login__form-container
+    .container
+      .row
+        .col-md-6
+          - unless current_user.present?
+            = simple_form_for(resource, as: resource_name, url: session_path(resource_name), role: "form", html: {id: "sign_in_user", class: "login__form", autocomplete: "off"}, format: :json, remote: true) do |f|
+              .card.card--padded
+                .card__header
+                  .card__header__content
+                    %h2= "Login to #{Dgrants::Application::CONSTS[:app_name]}"
+                .card__content
+                  #form_login_status.alert.alert-success.hidden{role: "alert"}
+                    There was an error with your <strong>email/password</strong> combination. Please try again.
+                    / fake fields are a workaround for chrome autofill getting the wrong fields
+                    = email_field_tag :fake_email, nil, style: "display:none", required: false        
+                    = password_field_tag :fake_password, nil, style: "display:none", required: false
+
+                  %fieldset{class: "fieldset"}
+                    = f.input :email, required: false, autofocus: true, class: "login__email"
+                    = f.input :password, required: false
+                    %br/
+                    .row
+                      .col-sm-4
+                        = f.button :submit, "Login", class: "btn btn-block btn-primary"
+
+                .card__footer.card__footer--unpadded
+                  = link_to "Forgotten your password? Reset it here", new_password_path(resource_name), class: 'marl15'
+        
+        .col-md-6.col-sm-6
+          %h2.no-margin-top= "Not yet registered for #{Dgrants::Application::CONSTS[:app_name]}?"          
+          %b= Dgrants::Application::CONSTS[:app_name]
+          = t("controllers.home.app_description").html_safe
+          
+          %b Over $1 billion in payments made.
+          %br/
+          = link_to "Learn More",  learn_more_path, class: "btn btn-warning btn-lg", style: "margin-top:20px"

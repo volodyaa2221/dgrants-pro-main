@@ -1,0 +1,325 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content{style: "padding:10px 20px"}
+
+              .heading.clearfix
+                .pull-left
+                  %h4.text_blue1= "BUDGET: #{@schedule.name}"
+                .col-md-12.col-sm-12{style: "padding-left:0"}
+                  %h4.text_blue1{style: "margin-top:0"}= link_to("Back to Template Schedules", "javascript: back_to_templates()")
+        
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              #transaction.tab-pane.active
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8 Name
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .parsley-validate.parsley-bind#for_name
+                            = text_field_tag :name, @schedule.name, class: :"form-control", required: true
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+                      
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 1
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8 Currency
+                    .col-md-5.col-sm-4.col-4
+                      = text_field_tag :vpd_currency, @vpd_currency.code, class: :"form-control", disabled: true
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 2
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "VAT/GST TAX RATE"
+                        = tooltip_link("Default tax rate (%) for new entries")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_tax_rate
+                            - tax_rate = (@schedule.present? && @schedule.tax_rate.present? && @schedule.tax_rate>0) ? @schedule.tax_rate : nil
+                            = text_field_tag :tax_rate, tax_rate, placeholder: "e.g. 10", class: :"form-control", required: true, "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 3
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "WITHHOLDING TAX RATE"
+                        = tooltip_link("Withholding tax applied to&nbsp;new invoices")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_withholding_rate
+                            - withholding_rate = (@schedule.present? && @schedule.withholding_rate.present? && @schedule.withholding_rate>0) ? @schedule.withholding_rate : nil
+                            = text_field_tag :withholding_rate, withholding_rate, placeholder: "e.g. 10", class: :"form-control", "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 4
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "OVERHEAD"
+                        = tooltip_link("Overhead applied to new invoices")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_overhead_rate
+                            - overhead_rate = (@schedule.present? && @schedule.overhead_rate.present? && @schedule.overhead_rate>0) ? @schedule.overhead_rate : nil
+                            = text_field_tag :overhead_rate, overhead_rate, placeholder: "e.g. 10", class: :"form-control", "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 5
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "HOLDBACK"
+                        = tooltip_link("% fees held back to completion (and cap)")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-md-4.col-sm-4{style:"padding-right:0"}
+                          .input-group
+                            - holdback_rate = (@schedule.present? && @schedule.holdback_rate.present? && @schedule.holdback_rate>0) ? @schedule.holdback_rate : nil
+                            = text_field_tag :holdback_rate, holdback_rate, placeholder: "e.g. 0", class: :"form-control"
+                            %span.input-group-addon= "%"
+                        .col-md-5.col-sm-4
+                          - holdback_amount = (@schedule.present? && @schedule.holdback_amount.present? && @schedule.holdback_amount>0) ? @schedule.holdback_amount : nil
+                          = text_field_tag :holdback_amount, holdback_amount, placeholder: "#{@symbol}CAP", class: :"form-control"
+                        .col-md-3.col-sm-4
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 6
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "MILESTONES"
+                        = tooltip_link("Payment terms for each non-patient based payable event (e.g. Reday to Enrol, IRB Approval)")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-sm-5
+                        .col-sm-7
+                          = link_to "Add ENTRY", new_dashboard_trial_entry_path(@trial)+"?schedule=#{@schedule.id.to_s}&entry_type=0", remote: true, class: :"btn btn-primary pull-right", id: :add_static_entry
+                  = render "static_entries"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 7
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "VISITS & PROCEDURES"
+                        = tooltip_link("Payment terms for each patient related visit or precedure")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-sm-5
+                        .col-sm-7
+                          = link_to "Add ENTRY", new_dashboard_trial_entry_path(@trial)+"?schedule=#{@schedule.id.to_s}&entry_type=1", remote: true, class: :"btn btn-primary pull-right", id: :add_patient_entry
+                  = render "patient_entries"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 8
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8
+                        = "PASSTHROUGH BUDGETS"
+                        = tooltip_link("Pre-agreed passthrough budgets for services such as advertising, travel etc.")
+                    .col-md-5.col-sm-4.col-4
+                      = link_to "Add ENTRY", new_dashboard_trial_passthrough_budget_path(@trial)+"?schedule=#{@schedule.id.to_s}", remote: true, class: :"btn btn-primary pull-right", id: :add_passthrough_entry
+                  = render "passthrough_budgets"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 9
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8 PAYMENT TERMS
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group
+                            = select_tag :payment_terms, options_for_select(SiteSchedule::PAYMENT_TERM, @schedule.payment_terms), {class: :"form-control input-md"}
+                            %span.input-group-addon= "Days"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right{onclick: "saveSchedule()"} Save
+
+/ Modal
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+    
+
+:javascript
+  var staticEntriesTable, patientEntriesTable, passthroughBudgetsTable
+
+  new MyApp.spinner($("#right_main_content"), $("button.pull-right"), "click");
+
+  function saveSchedule() {
+    var data = {
+          "trial_schedule[name]": $("#name").val(),
+          "trial_schedule[tax_rate]": $("#tax_rate").val(),
+          "trial_schedule[withholding_rate]": $("#withholding_rate").val(),          
+          "trial_schedule[overhead_rate]": $("#overhead_rate").val(),          
+          "trial_schedule[holdback_rate]": $("#holdback_rate").val(),
+          "trial_schedule[holdback_amount]": $("#holdback_amount").val(),
+          "trial_schedule[payment_terms]": $("#payment_terms").val()
+        }
+    $.ajax({
+      type: "PUT",
+      url:  "#{dashboard_trial_schedule_path}", 
+      data: data
+    }).success(function(data) {
+      $(".spinner").remove()
+      if (data.success) {
+        if (data.success.refresh) {
+          reloadSchedulePage(true)
+        } else {
+          $("#popup_modal_title").text(data.success.msg)
+          $("#popup_modal_box .message").html(data.success.text)
+          $("#popup_modal_box").modal("show")
+        }
+      } else {
+        var element_id = data.failure.element_id
+        $("#"+ element_id).parent().parent().addClass("has-error")
+        error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+        $("#"+ element_id).parent().append(error)
+      }
+    }).fail(function(data) {
+      $(".spinner").remove()
+      console.log(data)
+    })  
+  }
+
+  $(function() {
+    staticEntriesTable  = setup_data_table("static_entries")
+    patientEntriesTable = setup_data_table("patient_entries")
+    passthroughBudgetsTable = setup_data_table("passthrough_budgets")
+  })
+
+  function setup_data_table(label) {
+    var targetCols = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    var unit = "Payment Entries"
+    if (label == "passthrough_budgets") {
+      targetCols = [0, 1, 2, 3, 4]
+      unit = "Passthrough Budgets"
+    }
+    var table_id = label +"_data_table";
+    dt_table = $("#"+ table_id).dataTable({
+      sPaginationType: "simple",
+      lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+      paging: false,
+      bJQueryUI: true,
+      bProcessing: true,
+      bServerSide: true,
+      aoColumnDefs: [ { "bSortable": false, "aTargets": targetCols } ],
+      sAjaxSource: $('#'+ table_id).data('source'),
+      fnRowCallback: function(nRow, aData, iDisplayIndex) {
+        var id = aData[aData.length-1]
+        $(nRow).attr("id", id)
+        return nRow
+      },oLanguage: {
+        sEmptyTable: "No "+ unit +" registered"
+      },
+      responsive: true
+    })
+
+    $("#"+ table_id).removeClass("no-footer");
+    $("#"+ table_id +"_filter").css("display", "none");
+    $("#"+ table_id +"_length").css("display", "none");
+    $("#"+ table_id).next().remove();
+
+    $("#"+ table_id +"_wrapper").find("div.row").css("margin-left", "").css("margin-right", "");
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-left", "0");
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-right", "0");
+
+    return dt_table
+  }
+
+  var object_id = null, object = null
+  function update_data(id, class_name, model_name) {
+    object_id = id
+    object = model_name
+    var title = null
+
+    title = "Delete "+ class_name
+    msg   = "Are you sure to delete this "+ object +"? This cannot be reversed later."
+
+    $("#confirm_modal_title").text(title)
+    $("#confirm_modal_box .message").html(msg)
+    $("#confirm_modal_box").modal("show")
+  }
+
+  $("#confirm_modal_box .modal-footer .btn-default").off("click").on("click", function() {
+    object_id = null
+    object    = null
+  })
+
+  $("#confirm_modal_box .modal-footer #yes_btn").off("click").on("click", function() {
+    $("#confirm_modal_box").modal("hide")
+    if (object_id == null) return
+    var url = "/dashboard/trial/#{@trial.id.to_s}/entries/"
+    if (object == "passthrough budget") url = "/dashboard/trial/#{@trial.id.to_s}/passthrough_budgets/"
+
+    $.ajax({
+      type: "DELETE",
+      url:  url + object_id,
+    }).success(function(data) {
+      $(".spinner").remove()
+      if (data.success) {
+        if (object == "payment entry") {
+          if (data.success.type == 0) staticEntriesTable.fnDraw()
+          else patientEntriesTable.fnDraw()
+        } else if (object == "passthrough budget") {
+          passthroughBudgetsTable.fnDraw()
+        }
+      }
+    }).fail(function(data) {
+      $(".spinner").remove()
+      console.log(data)
+    })
+  })
+
+  function back_to_templates() {
+    $.ajax({
+      type: "GET",
+      url: "#{dashboard_trial_schedules_path(@trial)}",
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })

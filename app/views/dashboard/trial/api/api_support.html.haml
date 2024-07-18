@@ -1,0 +1,129 @@
+- host = Rails.env.development? ? Dgrants::Application::CONSTS[:dev_host] : Dgrants::Application::CONSTS[:app_host]
+- site = Site.first
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+
+        .well.wellw#tab-contents
+          .table-content
+            .tableWrap
+              dGrants provides a RESTful API for third party - such as EDC or ePRO systems - to automatically log deliverable events for sites and trials in the dGrants sytem.
+              .no-class{style: "margin:10px"}
+                Your security token for this trial is
+                %strong.text_blue= "#{@token}"
+                %br/
+                %br/
+                If the request is successful, the dGrants API returns:
+                %br/
+                &nbsp;&nbsp;{
+                %br/
+                &nbsp;&nbsp;&nbsp;&nbsp;"status": "ok"
+                %br/
+                &nbsp;&nbsp;}
+                %br/
+                If a request is unsuccessful, the dGrants API will return an error:
+                %br/
+                &nbsp;&nbsp;{
+                %br/
+                &nbsp;&nbsp;&nbsp;&nbsp;"status": "fail"
+                %br/
+                &nbsp;&nbsp;&nbsp;&nbsp;"errors": ["invalid pateint ID"]
+                %br/
+                &nbsp;&nbsp;}
+
+            .hr
+            .tableWrap
+              %h4.text_blue 1.0 GETTING A LIST OF ELIGIBLE EVENTS
+              .no-class{style: "margin: 10px 0px 0px 10px"}
+                Third party systems can obtain the list of eligible static and patient events registered for a specific trial.
+                .gray-box{style: "margin:5px 0"}
+                  %strong GET
+                  %br/
+                  %label.text_blue= "#{host}/api/v1/get_defs?token=#{@token}"
+
+            .hr
+            .tableWrap
+              %h4.text_blue 2.0 LOGGING AN EVENT
+              .no-class{style: "margin: 10px 0px 0px 10px"}
+                Third party systems can obtain the list of available patients to check a patient record initialized with a CONSENT event before logging any other events for that patient in a specific site.
+                .gray-box{style: "margin:5px 0"}
+                  %strong GET
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/get_logged_patient_ids?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+
+                Third party systems log static events for a specific site using the following call. Please note that sites' event logs should be initialized with a CONTRACT event before any other events can be logged for that site.
+                .gray-box{style: "margin:5px 0"}
+                  %strong POST
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/log?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_id=[EVENT ID]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &datetime=YYYY-MM-DD
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_log_id=[EVENT LOG ID]
+
+                Third party systems log static events for a specific patient at a specific site using the following call. Please note that a patient record should be initialized with a CONSENT event before any other events can be logged for that patient.
+                .gray-box{style: "margin:5px 0"}
+                  %strong POST
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/log?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_id=[EVENT ID]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &datetime=YYYY-MM-DD
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &patient_ID=[PATIENT ID]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_log_id=[EVENT LOG ID]
+
+            .hr
+            .tableWrap
+              %h4.text_blue 3.0 REVERSING AN EVENT
+              .no-class{style: "margin: 10px 0px 0px 10px"}
+                Third party systems can reverse previously logged events by making the following calls:
+                %br/
+                Reversing All Events for a Site
+                .gray-box{style: "margin:5px 0"}
+                  %strong DELETE
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/rev?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+
+                Reversing [EVENT_ID] for a Site
+                .gray-box{style: "margin:5px 0"}
+                  %strong DELETE
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/rev?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_id=[EVENT ID]
+                Reversing All Events for a Patient
+                .gray-box{style: "margin:5px 0"}
+                  %strong DELETE
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/rev?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &patient_ID=[PATIENT ID]
+                Reversing [EVENT_ID] for a Patient
+                Reversing All Events for a Patient
+                .gray-box{style: "margin:5px 0"}
+                  %strong DELETE
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/rev?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &patient_ID=[PATIENT ID]
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &event_id=[EVENT ID]
+
+            .hr
+            .tableWrap
+              %h4.text_blue 4.0 DUMP ALL EVENT LOGS
+              .no-class{style: "margin: 10px 0px 0px 10px"}
+                Third party systems can dump all previously logged events by making the following calls:
+                Dumping All Events for a Trial
+                .gray-box{style: "margin:5px 0"}
+                  %strong GET
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/dump?token=#{@token}"
+                Dumping All Events for a Site
+                .gray-box{style: "margin:5px 0"}
+                  %strong GET
+                  .no-class
+                    %label.text_blue{style: "width:100%;margin:0"}= "#{host}/api/v1/dump?token=#{@token}"
+                    %label.text_blue{style: "width:100%;margin:0 40px"} &s=[site_id]

@@ -1,0 +1,53 @@
+.modal-dialog
+  .modal-content
+    = form_for(@site, url: dashboard_site_sites_path+"?trial_id=#{@trial.id.to_s}", remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Add Site
+
+      .modal-body
+        .form-group
+          = f.label :site_id, "Site ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :site_id, placeholder: "e.g. 0001", required: true, class: :"form-control input-sm"
+
+        .form-group
+          = f.label :name, "Site Name :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :name, placeholder: "e.g. Example Hospital", required: true, class: :"form-control input-sm"
+
+        .form-group
+          = f.label :country, "Country :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :country, options_from_collection_for_select(@trial.vpd.vpd_countries.activated_countries.order(name: :asc), :id, :name), {include_blank: true}, {class: :"form-control input-sm", required: true}
+
+        .form-group
+          = f.label :state_code, "State/Province :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :state_code, [], {include_blank: true}, {class: :"form-control input-sm", id: :order_state_code_wrapper}
+
+        .form-group
+          = f.label :city, "City :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :city, placeholder: "e.g. Grafton", required: true, class: :"form-control input-sm"
+
+        .form-group
+          = f.label :vpd_currency, "Currency :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :vpd_currency, options_for_select(@currencies), {include_blank: true, class: :"form-control input-sm", required: true}
+
+        -# .form-group
+        -#   = f.label :trial_schedule, "Schedule :", class: :"col-sm-4 control-label"
+        -#   .col-sm-6
+        -#     = select_tag :trial_schedule, options_for_select(@trial_schedules), {include_blank: false, class: :"form-control input-sm", required: true}
+
+        .form-group
+          = f.label :schedule_site, "Budget From:", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :schedule_site, options_for_select(@schedule_sites), {include_blank: false, class: :"form-control input-sm", required: true}
+
+      .modal-footer
+        %button.btn.btn-primary.create-site-button
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Cancel

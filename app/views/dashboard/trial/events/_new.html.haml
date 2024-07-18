@@ -1,0 +1,38 @@
+.modal-dialog
+  .modal-content
+    = form_for(@event, url: dashboard_trial_events_path(@trial), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title= f.object.type==0 ? "Add Trial Single Event" : "Add Trial Patient Event"
+
+      .modal-body
+        = hidden_field_tag :trial_event_type, @event.type, name: "trial_event[type]"
+
+        .form-group
+          = f.label :event_id, "Event ID :", class: :"col-sm-4 control-label"
+          .col-sm-6.sub-sponsor-box
+            = f.text_field :event_id, placeholder: "e.g. CONTRACT", class: :"form-control input-sm", required: true
+            %span.help-block-title
+              %label.text_blue1 Event ID cannot be changed later
+
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_area :description, placeholder: "e.g. Event Description", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :dependency, "Dependency :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :dependency, options_from_collection_for_select([@trial.start_event(f.object.type)], :id, :event_id), {include_blank: true}, {class: :"form-control input-sm"}
+
+        .form-group#days{style: "display:none"}
+          = f.label :days, "+ Days :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :days, placeholder: "e.g. 10", class: :"form-control input-sm", "data-parsley-type"=>"number"
+
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

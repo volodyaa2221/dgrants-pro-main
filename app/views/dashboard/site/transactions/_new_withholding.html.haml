@@ -1,0 +1,36 @@
+.modal-dialog
+  .modal-content
+    - if @site.site_schedule.present?
+      = form_for(@transaction, url: dashboard_site_withholding_path(@site), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+        .modal-header
+          %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+          %h4.modal-title#data_title= @payment_type=="0" ? "Reverse Withholding" : "Remit Withholding"
+
+        .modal-body
+          = hidden_field_tag :payment_type, @payment_type
+
+          .form-group
+            %label.col-sm-10.control-label= @payment_type=="0" ? "How much withholding do you wish to reverse?(0 - #{@site.site_schedule.currency.symbol} #{@withholding})" : "How much withholding do you wish to remit?(0 - #{@site.site_schedule.currency.symbol} #{@withholding})"
+  
+          .form-group
+            = f.label :withholding, @payment_type=="0" ? "Withholding Reverse Amount :" : "Withholding Remit Amount :", class: :"col-sm-6 control-label"
+            .col-sm-4
+              = f.text_field :withholding, value: nil, placeholder: "e.g. 1000", class: :"form-control input-sm", required: true, "data-parsley-type"=>"number", "data-parsley-min"=>"0", "data-parsley-max"=>"#{@withholding}"
+
+        .modal-footer
+          = button_tag(type: :submit, class: :"btn btn-primary") do
+            Save
+            %i.fa.fa-angle-double-right
+          %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel
+    - else 
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Withholding Release
+
+      .modal-body
+        .form-group
+          %label= "Please set the Schedule and Currency."
+
+      .modal-footer
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Close
+  

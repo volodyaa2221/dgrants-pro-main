@@ -1,0 +1,148 @@
+- user = current_user
+- disabled = !user.trial_editable?(@site.trial) && !@site.trial_associate?(user) && !@site.site_admin?(user)
+- tcm_level_user = user.tcm_level_user?(@site)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        = form_for(@site, url: dashboard_site_site_path, remote: true, html:{class: :"form-vertical parsley-form edit-site"}) do |f|
+          .card.card--padded{data: {:"match-height"=>"card"}}
+            .collapse.in.card__collapse
+              %fieldset.fieldset
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      .col-md-12.col-sm12{style: "padding-left:0"}
+                        = f.label :site_id, "Site ID"
+                      .col-md-4.col-sm-12{style: "padding-left:0; margin-bottom:15px"}
+                        = f.text_field :site_id, placeholder: "e.g. 0001", class: :"form-control", required: true, disabled: !tcm_level_user
+                
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      = f.label :name, "Site Name"
+                      = f.text_field :name, placeholder: "e.g. Example Hospital", class: :"form-control", required: true, disabled: disabled
+
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      = f.label :address, "Street Address"
+                      = f.text_field :address, placeholder: "e.g. 123 Pelican Way", class: :"form-control", required: true, disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :city, "City"
+                      = f.text_field :city, placeholder: "e.g. Grafton", class: :"form-control", required: true, disabled: disabled
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :state_code, "State/Province"
+                      = f.select :state_code, options_for_select(@states, selected: @site.state_code), {include_blank: true}, {class: :"form-control", required: true, id: :order_state_code_wrapper, disabled: disabled}
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      - vpd_country_id = @site.vpd_country.present? ? @site.vpd_country.id.to_s : ''
+                      = f.label :country, "Country"
+                      = f.select :country, options_for_select(@countries, selected: vpd_country_id), {include_blank: true}, {class: :"form-control", required: true, disabled: disabled}
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :zip_code, "ZIP / Postcode"
+                      = f.text_field :zip_code, class: :"form-control", required: true, disabled: disabled
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :site_type, "Site Type"
+                      = f.select :site_type, options_for_select(Site::TYPE.map{|st| [st, Site::TYPE.index(st)]}, selected: f.object.site_type), {}, class: :"form-control", required:true, disabled: disabled
+
+                - if user.tcm_level_user?(@site)
+                  .row
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :status, "Status"
+                        = f.select(:status, options_for_select([["Active", 1], ["Disable", 0]], selected:f.object.status), {}, {class: :"form-control", disabled: disabled})
+
+                %hr{style: "margin:0 0 5px 0"}/
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :pi_first_name, "PI First Name"
+                      = f.text_field :pi_first_name, class: :"form-control", disabled: !tcm_level_user
+
+                  .col-md-6.col-sm-6
+                    - if @us_site
+                      .form-group
+                        = f.label :pi_dea, "PI DEA # (US Only)"
+                        = f.text_field :pi_dea, class: :"form-control", disabled: !tcm_level_user
+                    - else
+                      .form-group
+                        = f.label :drugdev_dea, "DrugDev #"
+                        = f.text_field :drugdev_dea, class: :"form-control", disabled: !tcm_level_user
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :pi_last_name, "PI Last Name"
+                      = f.text_field :pi_last_name, class: :"form-control", disabled: !tcm_level_user
+
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :budget_template, "Budget Template"
+                      = text_field_tag :budget_template_name, @budget_template_name, class: :"form-control", disabled: true
+
+                  - if @us_site
+                    .col-md-6.col-sm-6
+                      .form-group
+                        = f.label :drugdev_dea, "DrugDev Golden #"
+                        = f.text_field :drugdev_dea, class: :"form-control", disabled: disabled
+
+              - if !disabled
+                .card__footer
+                  .row{style: "margin-left:0;margin-right:0"}
+                    = f.submit "Save Changes", class: :"btn btn-primary ajax-button update-site"
+
+:css
+  .datepicker{z-index: 9999 !important;}
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $(".update-site"), "click");
+  $("#order_state_code_wrapper").change(function() {
+    state  = $("#order_state_code_wrapper option:selected").text()
+    $("#site_state").val(state)
+  })
+
+  $(".edit-site").on("ajax:success", function(event, data, status, xhr) {
+    $(".spinner").remove()
+    if (data.success) {
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html(data.success.text)
+      $("#popup_modal_box").modal("show")
+    } else {
+      var element_id = data.failure.element_id
+      $("#"+ element_id).parent().parent().addClass("has-error")
+      error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+      $("#"+ element_id).parent().append(error)
+    }
+  })
+
+  $("select#site_country").change(function(event) {
+    var vpdCountry, select_wrapper, url
+    select_wrapper = $("#order_state_code_wrapper")
+    $("select", select_wrapper).attr("disabled", true)
+    vpdCountry = $(this).val()
+    
+    if (vpdCountry === '') {
+      select_wrapper.html("<option></option>")
+    } else {
+      url = "/dashboard/vpd/0/countries/"+ vpdCountry +"/provinces"
+      return select_wrapper.load(url)
+    }
+  })
+
+  $(function() {
+    $(".parsley-form").parsley("validate")
+  })

@@ -1,0 +1,46 @@
+$("#data_modal").html("<%= escape_javascript(render '/dashboard/site/sites/new')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form#new_site").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) { 
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Site <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully added</p>")
+    $("#popup_modal_box").modal("show")
+
+    dt_table.fnDraw()
+  } else { 
+    $(".spinner").remove()
+    
+    var element_id = data.failure.element_id
+    $("#"+ element_id).parent().parent().addClass("has-error")
+    error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+    $("#"+ element_id).parent().append(error)
+  }
+})
+
+$("select#site_country").change(function(event) {
+  var vpdCountry, select_wrapper, url
+  select_wrapper = $("#order_state_code_wrapper")
+  $("select", select_wrapper).attr("disabled", true)
+  vpdCountry = $(this).val()
+  
+  if (vpdCountry === '') return
+  url = "/dashboard/vpd/0/countries/"+ vpdCountry +"/provinces"
+  return select_wrapper.load(url)
+})
+
+$("select#vpd_currency").change(function(event) {
+  var vpdCurrency, select_wrapper, url
+  select_wrapper = $("#schedule_site")
+  $("select", select_wrapper).attr("disabled", true)
+  vpdCurrency = $(this).val()
+
+  if (vpdCurrency === '') return
+  url = "<%= sites_list_by_currency_dashboard_trial_trial_path(@trial) %>" + "?vpd_currency_id="+ vpdCurrency
+  return select_wrapper.load(url)
+})

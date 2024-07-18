@@ -1,0 +1,23 @@
+.modal-dialog
+  .modal-content
+    = form_for @trial, url: dashboard_trial_upload_config_path(@trial, format: :json), method: :post, remote: true, html:{class: :"form-horizontal parsley-form", multipart: true, id: :"upload_sites_form", data:{ajax: true}} do |f|
+      = hidden_field_tag :authenticity_token, form_authenticity_token
+
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Bulk Add Sites
+        
+      .modal-body
+        .form-group
+          %label.col-sm-12= "Use this tool to bulk add sites from CSV files using the following #{link_to("template", dashboard_trial_template_path(@trial, "csv"))}.".html_safe
+          
+        .form-group
+          %label.col-sm-4.control-label CSV file
+          .col-sm-6{style: :"padding-top: 5px;"}
+            = file_field_tag :csv_file, required: true
+
+      .modal-footer
+        %button.btn.btn-primary.upload-config-file-button
+          Upload
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

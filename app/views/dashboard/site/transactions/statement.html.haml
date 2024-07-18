@@ -1,0 +1,165 @@
+- symbol = @currency.present? ? @currency.symbol : ''
+- is_trial_admin = current_user.trial_editable?(@site.trial)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content{style: "padding:10px 20px"}
+
+              .card-boxes.bordered.clearfix{style: "margin:10px 0"}
+                .card-box
+                  .well.sub-tab{style:"background-color:black !important; min-width: 140px;"}
+                    = "EARNED#{tooltip_link("This is the amount of money that the site has earned.", "top", "white")}".html_safe
+                    %br/
+                    %br/
+                    - earned = @past[:earned].round(2)
+                    - x = earned >= 0  ?  '' : '-'
+                    = "#{x}#{symbol}  #{number_to_currency(earned.abs, unit: '')}"
+                .card-box
+                  .well.sub-tab{style:"background-color:#f16700 !important; min-width: 140px;"}
+                    = "HOLDBACK#{tooltip_link("This is the amount of money earned that is being held back until study completion.", "top", "white")}".html_safe
+                    %br/
+                    %br/
+                    - retained = @past[:retained].round(2)
+                    - x = retained >= 0  ?  '' : '-'
+                    = "#{x}#{symbol}  #{number_to_currency(retained.abs, unit: '')}"
+                .card-box
+                  .well.sub-tab{style:"background-color:#1283c6 !important; min-width: 140px;"}
+                    = "ADVANCED#{tooltip_link("This is the amount of money provided to the site in advance of earnings.", "top", "white")}".html_safe
+                    %br/
+                    %br/
+                    - advanced = @past[:advanced].round(2)
+                    - x = advanced >= 0  ?  '' : '-'
+                    = "#{x}#{symbol}  #{number_to_currency(advanced.abs, unit: '')}"
+                .card-box
+                  .well.sub-tab{style:"background-color:#bdd049 !important; min-width: 140px;"}
+                    = "PAID#{tooltip_link("This is the amount of money paid (or in process of payment) to the site.", "top", "white")}".html_safe
+                    %br/
+                    %br/
+                    - paid = @past[:remitted].round(2)
+                    - x = paid >= 0  ?  '' : '-'
+                    = "#{x}#{symbol}  #{number_to_currency(paid.abs, unit: '')}"
+                .card-box.pull-right
+                  .well.sub-tab{style:"background-color:#ebf0f4 !important; min-width: 140px;"}
+                    %label{style:"color:black;margin-bottom:0"}
+                      = "OWING&nbsp;#{tooltip_link("This is the balance of payable money not yet paid or in process of payment.")}".html_safe
+                    %br/
+                    %br/
+                    %label{style:"color:red;margin-bottom:0"}
+                      - owing = @past[:owing].round(2)
+                      - x = owing >= 0  ?  '' : '-'
+                      = "#{x}#{symbol}  #{number_to_currency(owing.abs, unit: '')}"
+
+              - if is_trial_admin
+                - if @past[:retained] > 0
+                  .row.bordered{style: "margin:10px 0;padding:10px 0"}
+                    .col-lg-6.col-md-6.col-sm-6
+                      %label{style: "margin-top:5px;margin-bottom:0;font-weight:bold"}= "HOLDBACK: #{symbol} #{"%0.2f" % @past[:retained]}"
+                    .col-lg-6.col-md-6.col-sm-6
+                      = link_to "Release Holdback", dashboard_site_holdback_path(@site), remote: true, class: :"btn btn-primary btn-md sm-pull-right", style: "width:150px"
+
+                - if @withholding > 0
+                  .row.bordered{style: "margin:10px 0;padding:10px 0"}
+                    .col-lg-6.col-md-6.col-sm-6
+                      %label{style: "margin-top:5px;margin-bottom:0;font-weight:bold"}= "WITHHOLDING: #{symbol} #{"%0.2f" % @withholding}"        
+                    .col-lg-6.col-md-6.col-sm-6
+                      = link_to "Remit Withholding", dashboard_site_withholding_path(@site)+"?payment_type=1", remote: true, class: :"btn btn-primary btn-md sm-pull-right", style: "width:150px"
+                      .pull-right{style: "width:10px;height:10px"}
+                      = link_to "Reverse Withholding", dashboard_site_withholding_path(@site)+"?payment_type=0", remote: true, class: :"btn btn-primary btn-md sm-pull-right", style: "width:160px"
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+
+              .table-responsive
+                %table#data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_site_statement_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th TRAN_ID
+                      %th DATE
+                      %th DESCRIPTION
+                      %th EARNED
+                      %th HOLDBACK
+                      %th ADVANCED
+                      %th PAYABLE*
+                      %th STATUS
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;visibility:hidden"} Include disabled
+
+- if is_trial_admin
+  #data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [0, 2, 3, 4, 5, 6] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal + " Transactions"
+      $("#page_description").html(res)
+      return ""
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]
+      $(nRow).attr("id", id)
+      if (aData[aData.length-2] == 0) $(nRow).css("color", "red")
+      return nRow
+    },oLanguage: {
+      sEmptyTable:"No transactions logged",
+      oPaginate: {
+        sPrevious: "&larr; Prev",
+        sNext: "Next &rarr;"
+      }
+    },
+    fnDrawCallback: function(oSettings) {
+      if ($("#page_description").siblings(".pager").size() > 0) {
+        $("#page_description").siblings(".pager").remove()
+      }
+      $("#data_table_paginate ul").addClass("pager sm-pull-right").removeClass("pagination").insertBefore($("#page_description"))
+    },
+    responsive: true
+  });
+  
+  $("#data_table").removeClass("no-footer")
+  $("#data_table_filter").css("display", "none")
+  $("#data_table_length label").css("display", "none")
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  function goto_schedule() {
+    $("#nav__menu li>a[href='#schedules']").trigger("click")
+  }
+
+  function goto_invoice(url) {
+    ul = $(".event-button").parent().parent();
+    ul.find("li").removeClass("active")
+    $("#nav__menu li>a[href='#invoices']").parent().addClass("active")
+
+    $.ajax({
+      type: "GET",
+      url: url,
+      data: { "type": "ajax" }
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })

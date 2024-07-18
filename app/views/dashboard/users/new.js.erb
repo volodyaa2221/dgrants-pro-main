@@ -1,0 +1,131 @@
+$("#data_modal").html("<%= escape_javascript(render 'dashboard/users/new')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form#new_user").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.is_site_invitation) {
+    $(".spinner").remove()
+    $("#data_modal").modal("hide")
+    $("#confirm_modal_box").modal("hide")
+
+    $("#popup_modal_title").text("Invited new Site User")
+
+    var message = "", success = false;
+    if (data.success.sites && data.success.sites.length > 0) {
+      message = "<p>User <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully added to sites: " + data.success.sites.join(", ") + "</p>";
+      success = true;
+    }
+
+    if (data.failure.sites && data.failure.sites.length > 0) {
+      message += "<span class='help-block'>Failed to invite " + data.failure.name + " sites: <strong class='text_black'>"+ data.failure.sites.join(", ") + "</strong></span>";
+    }
+    
+    $("#popup_modal_box .message").html(message)
+    $("#popup_modal_box").modal("show")
+
+    if (success) {
+      dt_table.fnDraw()
+    }
+  } else {
+    if (data.success) { 
+      $("#data_modal").modal("hide")
+      $("#confirm_modal_box").modal("hide")
+
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html("<p>User <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully added</p>")
+      $("#popup_modal_box").modal("show")
+
+      dt_table.fnDraw()
+
+    } else { 
+      $(".spinner").remove()
+      
+      if (data.failure.need_confirm) {
+        $("#data_modal").modal("hide")
+        $("#popup_modal_box").modal("hide")
+
+        $("#confirm_modal_box .message").html(data.failure.msg)
+        $("#confirm_modal_box").modal("show")
+
+      } else { 
+        var element_id = data.failure.element_id
+        $("#"+ element_id).parent().parent().addClass("has-error")
+        error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+        $("#"+ element_id).parent().append(error)
+      }
+    }
+  }
+})
+
+$("#user_role").change(function() {
+  var user_role = $(this).val()
+  if (user_role == 1) {
+    $("#vpd_group").css("display", "none")
+    $("select#vpd").attr("required", false)
+    $("#trial_group").css("display", "none")
+    $("select#trial").attr("required", false)
+    $("#site_group").css("display", "none")
+    $("select#sites").attr("required", false)
+  } else if (user_role == 2) {
+    $("#vpd_group").css("display", '')
+    $("select#vpd").attr("required", true)
+    $("#trial_group").css("display", "none")
+    $("select#trial").attr("required", false)
+    $("#site_group").css("display", "none")
+    $("select#sites").attr("required", false)
+  } else if (user_role == 3  ||  user_role == 5) {
+    $("#vpd_group").css("display", '')
+    $("select#vpd").attr("required", true)
+    $("#trial_group").css("display", '')
+    $("select#trial").attr("required", true)
+    $("#site_group").css("display", "none")
+    $("select#sites").attr("required", false)
+  } else {
+    $("#vpd_group").css("display", '')
+    $("select#vpd").attr("required", true)
+    $("#trial_group").css("display", '')
+    $("select#trial").attr("required", true)
+    $("#site_group").css("display", '')
+    $("select#sites").attr("required", true)
+  }
+})
+
+$("select#vpd").change(function() {
+  if ($(this).val()) {
+    $("select#trial").load("/dashboard/users/trial_opts_for_vpd?vpd="+ $(this).val(), function(response, status, xhr) {
+      var trial = $("select#trial option:first").val()
+      if (trial) {
+        $("select#sites").load("/dashboard/users/site_opts_for_trial?trial="+ trial, function() {
+          adjustSiteSelectSize($(this))
+        })
+      } else {
+        $("select#sites").html("").attr("size", 1)
+      }
+    })
+  }
+})
+
+$("select#trial").change(function() {
+  if ($(this).val()) {
+    $("select#sites").load("/dashboard/users/site_opts_for_trial?trial="+ $(this).val(), function() {
+      adjustSiteSelectSize($(this))
+    })
+  } else {
+    $("select#sites").html("").attr("size", 1)
+  }
+})
+
+function adjustSiteSelectSize(select) {
+  var nOptions = select.children("option").length
+  if (nOptions > 0) {
+    if (nOptions > 8) {
+      select.attr("size", 8)
+    } else {
+      select.attr("size", nOptions)
+    }
+  } else {
+    select.attr("size", 1)
+  }
+}

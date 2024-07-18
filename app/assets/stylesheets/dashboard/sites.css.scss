@@ -1,0 +1,197 @@
+/*
+  Place all the styles related to the matching controller here.
+  They will automatically be included in application.css.
+*/
+
+.transactiontab_block {
+  background: #D3D3D3;
+  padding:15px 20px;
+  margin-bottom: 10px;
+}
+
+.transactiontab_block .col-2,
+.transactiontab_block .col-3 {
+  padding: 0px 5px;
+}
+
+.transactiontab_block .btn {
+  display: block;
+}
+
+.wid80 {
+  width: 80px;
+}
+.wid100 {
+  width: 100px;
+}
+.mart8 {
+  margin-top: 8px;
+}
+.mart20 {
+  margin-top: 20px;
+}
+
+.transactiontab_block .tableWrap {
+  margin:10px 0px;
+  background: #fff;
+}
+.transactiontab_block .tableWrap tr th {
+  text-transform:uppercase;
+  font-weight:400;
+}
+.transactiontab_block .col-1 span.sr-nu {
+  font-size:20px;
+  font-weight:400;
+  display:block;
+}
+.transactiontab_block .col-5 .curr {
+  text-transform: uppercase;
+  font-weight: 400;
+  font-size: 16px;
+  display:block;
+}
+
+span.mart6 {
+  margin-top: 6px;  
+}
+
+.transactiontab_block .tooltip-inner {
+  text-transform: none;
+}
+
+.bordered {
+  box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+  -moz-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0 1px 3px 0;
+  margin: 0;
+  .sub-tab {
+    border-radius: 10px;
+    margin: 10px 0 10px 0;
+    color: white;
+    text-align: center;
+  }
+}
+
+.invoice-table {
+  border: 2px solid #7e7e7e;
+  thead > tr > td, tbody > tr > td, tfoot > tr > td {
+    border: 0;
+    h2 {
+      display: inline;
+    }
+    h3 {
+      display: inline;
+    }
+  }
+  td#invoice {
+    background-color: #7e7e7e;
+    color: white;
+  }
+}
+
+.circle {
+  margin-top: 5px;
+  border-radius: 50%;
+  width: 10px;
+  position: relative;
+}
+.circle:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+.circle-black {
+  background-color: black;
+}
+.circle-red {
+  background-color: red;
+}
+.circle-green {
+  background-color: green;
+}
+.circle-orange {
+  background-color: orange;
+}
+
+.edit-site.form-horizontal .control-label {
+  text-align:left;  
+}
+
+.main-content {
+  overflow: inherit;
+}
+
+// site/invoices/new.haml & edit.haml
+.invoice-pay {
+  padding:10px;
+}
+
+.invoice-to {
+  float: left;
+  margin-right: 25px;
+}
+
+.invoice-address {
+  overflow: hidden;
+}
+
+.invoice-address .w30 {
+  width:120px
+}
+
+.invoice-pay p {
+  margin: 2px 0;
+  font-weight:bold
+}
+
+.table .invoice-pay .table {
+  background-color:inherit;
+}
+
+.invoice-address .table tbody td {
+  border:none;
+  padding:2px;
+}
+
+.invoice-address .table {
+  margin-top:15px;
+  margin-bottom:0;
+}
+
+.invoice-table .table>tbody>tr>td {
+  border:none;
+}
+
+// site/transactions/statement.haml
+.card-boxes {
+  padding: 0 5px;
+}
+
+.card-box {
+  margin: 0 5px;
+  width: 140px;
+  float: left;
+}
+
+@media (max-width:767px) {
+  .card-boxes {
+    padding: 5px;
+  }
+
+  .card-box {
+    margin: 0 2%;
+    width: 46%;
+  }
+}
+
+@media (max-width:480px) {
+  .card-boxes {
+    padding: 0 5px;
+  }
+
+  .card-box {
+    margin: 0 5px;
+    width: inherit;
+    float:none;
+  }
+}

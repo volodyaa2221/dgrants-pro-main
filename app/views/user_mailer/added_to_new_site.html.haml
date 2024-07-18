@@ -1,0 +1,19 @@
+!!!
+%html
+  %head
+    %meta{content: "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+  %body      
+    .mail-header
+      = image_tag(root_url + ActionController::Base.helpers.asset_path("logo.png"), height: 30) 
+
+    .mail-body
+      %p= @body.html_safe
+
+    %p Please don't hesitate to contact us for any help
+    %p= "The #{Dgrants::Application::CONSTS[:app_name]} Team"
+    %p= link_to Dgrants::Application::CONSTS[:app_host], Dgrants::Application::CONSTS[:app_host]
+     
+
+:javascript
+  elem=document.getElementById("message_headers");
+  elem.remove();

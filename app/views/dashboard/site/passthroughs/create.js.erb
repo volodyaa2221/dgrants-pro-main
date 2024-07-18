@@ -1,0 +1,18 @@
+<% if @result[:success] %>
+  $(".modal-body span.help-block").remove()
+  $("#data_modal").modal("hide")
+
+  $("#popup_modal_title").text("<%= @result[:msg] %>")
+  $("#popup_modal_box .message").html("<p>Passthrough <strong class='text_blue'><%= @result[:name] %></strong> has been successfully added</p>")
+  $("#popup_modal_box").modal("show")
+
+  dt_table.fnDraw()
+<% else %>
+  $(".spinner").remove()
+  $(".modal-body span.help-block").remove()
+  
+  var element_id = "<%= @result[:element_id]%>"
+  $("#"+ element_id).parent().parent().addClass("has-error")
+  error = "<span class='help-block'><strong class='text_black'><%= @result[:msg] %></strong></span>"
+  $("#"+ element_id).parent().append(error)
+<% end %>

@@ -1,0 +1,76 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:10px 20px"}
+              = form_for(@vpd, url: dashboard_vpd_vpd_path, remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+                .row
+                  %h4.text_blue Database Details:
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      = f.label :db_host, "Sever", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        /= f.url_field :db_host, class: :"form-control", style: "color: #000;", required: true, "data-parsley-type" => "url", placeholder: "db.mysql-sandbox.com"
+                        = f.text_field :db_host, class: :"form-control", style: "color: #000;", required: true, placeholder: "db.mysql-sandbox.com"
+                    .form-group
+                      = f.label :db_name, "Database Name", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        = f.text_field :db_name, required: true, class: :"form-control", style: "color: #000;"
+                    .form-group
+                      = f.label :username, "Username", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        = f.text_field :username, required: true, class: :"form-control", style: "color: #000;"
+                    .form-group
+                      = f.label :password, "Password", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        = f.text_field :password, class: :"form-control", style: "color: #000;"
+                    = f.submit "UPDATE", class: "btn btn-primary ajax-button pull-right"
+
+          .collapse.in.card__collapse{style: "border-top: 1px solid #e2e0e0;"}
+            .card__content.card__content--unpadded{style: "padding:10px 20px"}
+              = form_for(@vpd, url: dashboard_vpd_vpd_path, remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+                .row
+                  %h4.text_blue Database Details:
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      = f.label :trial_dashboard, "Trial Dashboard Url", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        = f.text_field :trial_dashboard, class: :"form-control", style: "color: #000;"
+                    .form-group
+                      = f.label :site_dashboard, "Site Dashboard Url", class: "col-sm-2 control-label"
+                      .col-sm-10
+                        = f.text_field :site_dashboard, class: :"form-control", style: "color: #000;"
+                    = f.submit "UPDATE", class: "btn btn-primary ajax-button pull-right"
+
+
+:javascript 
+  $(".parsley-form").parsley("validate")
+  new MyApp.spinner($("#right_main_content"), $("input.btn-primary"), "click")
+
+  $(".parsley-form").on("ajax:success",function(event, data, status, xhr) {
+    $(".spinner").remove()
+    if (data.success) {
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html("<p>VPD <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully updated</p>")
+      $("#popup_modal_box").modal("show")
+    } else {
+      if (data.failure) {
+        var element_id = data.failure.element_id
+        if (element_id == "popup") {
+          $("#popup_modal_title").text("Database Connection Failure")
+          $("#popup_modal_box .message").html("<p>"+ data.failure.msg +"</p>")
+          $("#popup_modal_box").modal("show")
+        } else {
+          $("#"+ element_id).parent().parent().addClass("has-error")
+          error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+          $("#"+ element_id).parent().append(error)
+        }
+      }
+    }
+  })

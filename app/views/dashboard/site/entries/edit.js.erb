@@ -1,0 +1,39 @@
+$("#data_modal").html("<%= escape_javascript(render 'dashboard/site/entries/edit')%>").modal()
+
+$(".parsley-form").parsley("validate")
+
+$("form.edit-form").on("ajax:success", function(event, data, status, xhr) {
+  $(".modal-body span.help-block").remove()
+
+  if (data.success) {
+    $("#data_modal").modal("hide")
+
+    $("#popup_modal_title").text(data.success.msg)
+    $("#popup_modal_box .message").html("<p>Payment Entry for <strong class='text_blue'>"+ data.success.name + "</strong> has been successfully updated</p>")
+    $("#popup_modal_box").modal("show")
+
+    if ($("#site_entry_type").val() == 0) staticEntriesTable.fnDraw()
+    else patientEntriesTable.fnDraw()
+  } else {
+    $(".spinner").remove()
+    if (data.failure.overlapped) {
+      $("#confirm_modal_box2 .message").html("You are adding a new payment entry that could duplicate a pre-existing entry of the same type, and therefore result in double payment. Is this correct?")
+      $("#confirm_modal_box2").modal("show")
+    } else {
+      var element_id = data.failure.element_id
+      $("#"+ element_id).parent().parent().addClass("has-error")
+      error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+      $("#"+ element_id).parent().append(error)
+    }
+  }
+})
+
+$("#confirm_modal_box2 .modal-footer .btn-default").off("click").on("click", function() {
+  $("#data_modal").modal("hide")
+})
+
+$("#confirm_modal_box2 .modal-footer #yes_btn").off("click").on("click", function() {
+  $("#allow_overlap_dates").val(true)
+  $("#confirm_modal_box2").modal("hide")
+  $("form.edit-form").submit()
+})

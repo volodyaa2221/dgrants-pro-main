@@ -1,0 +1,33 @@
+.modal-dialog
+  .modal-content
+    = form_for(@currency, url: dashboard_currency_path(@currency), remote: true, html:{class: :"form-horizontal parsley-form edit-data"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Edit Currency
+
+      .modal-body
+        .form-group
+          = f.label :code, "Code :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :code, placeholder: "e.g. USD", required: true, class: :"form-control input-sm"
+
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_area :description, placeholder: "e.g. Currency Description", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :symbol, "Symbol :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :symbol, placeholder: "e.g. $", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :rate, "Exchange Rate :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :rate, placeholder: "e.g. 1.0", required: true, class: :"form-control input-sm", "data-parsley-type"=>"number"
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

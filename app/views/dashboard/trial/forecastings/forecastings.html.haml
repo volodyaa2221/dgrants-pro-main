@@ -1,0 +1,279 @@
+- editable = current_user.trial_editable?(@trial)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              %form.parsley-form{data:{remote: "true"}}
+
+                .table-responsive
+                  %table#forecastings_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_trial_forecastings_path(format: :json)}}
+                    %thead.bg_gray
+                      %tr
+                        %th{style:"width:50%"} Country
+                        %th{style:"width:20%"} Forecast Start
+                        %th{style:"width:20%"} Forecast&nbsp;Recruitment
+                        -# %th{style:"width:20%"} Real Recruitment*
+                    %tbody
+
+              .row
+                - if editable
+                  .col-lg-6.col-md-6.col-sm-6
+                    .payablebuttons
+                      %button#save_forecastings.btn.btn-primary.ajax-button Save Changes
+                .col-lg-6.col-md-6.col-sm-6.pull-right
+                  #page_description{style: "line-height:15px"}
+
+          .card__footer
+            .row{style: "margin-left:0;margin-right:0"}
+              %h4.text_blue Event and Cost Projections
+
+            %form.form-inline{data:{remote: "true"}}
+              .row{style: "margin-left:0;margin-right:0"}
+                .col-md-6.col-sm-12{style:"padding:0;margin-bottom:10px"}
+                  %label.cont-txt Filter:&nbsp;
+                  - countries = @vpd_countries.map{|vpd_country| [vpd_country.name, vpd_country.id.to_s]}
+                  - countries.unshift(["All Countries", "all_countries"])
+                  - sites = @sites.map{|site| [site.site_id, site.id.to_s]}
+                  - sites.unshift(["All Sites", "all_sites"])
+                  .cont-wrap
+                    = select_tag :from, options_for_select(@from, @from.first), class: :"form-control input-sm", disabled: true
+                    &nbsp;
+                    = select_tag :to, options_for_select(@to, @to.last), class: :"form-control input-sm"                    
+                    &nbsp;
+                    = select_tag :country, options_for_select(countries), class: :"form-control input-sm"
+                    &nbsp;
+                    = select_tag :site, options_for_select(sites), class: :"form-control input-sm"
+
+                - event_ids = @trial_events.map(&:event_id)
+                - event_ids << ["USD$", "USD"]
+                .col-md-3.col-sm-6{style:"padding:0;margin-bottom:10px"}
+                  %label.cont-txt Type:&nbsp;
+                  .cont-wrap
+                    = select_tag :event_id, options_for_select(event_ids, "USD"), class: :"form-control input-sm"
+                    &nbsp;
+                    = select_tag :option, options_for_select(["Cumulative", "Frequency"]), class: :"form-control input-sm"
+
+                .col-md-3.col-sm-6{style:"padding:0;margin-bottom:10px"}
+                  .pull-right
+                    %button#view_report.btn.btn-warning.input-xs.pull-right{disabled: @trial.should_forecast || @trial.forecasting_now} View
+                    - disabled = @trial.forecasting_now || (!@trial.should_forecast && !@trial.forecasting_now)
+                    %button#create_forecast.btn.btn-warning.input-xs.pull-right{style: "margin-right:10px", disabled: disabled}= @trial.forecasting_now ? "Calculating..." : "Create Forecast"
+
+            .row
+              - if @trial.should_forecast || @trial.forecasting_now
+                .report-panel{style: "display:none"}
+              - else
+                .report-panel
+
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $("#save_forecastings"), "click")
+
+  forecastings_table = $("#forecastings_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [] } ],
+    sAjaxSource: $('#forecastings_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text()
+      aoData.push({name: "show_option", value: show_option})
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal + " Forecastings" 
+      $("#page_description").html(res)
+      return ""
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]
+      $(nRow).attr("id", id)
+      return nRow
+    }, oLanguage: {
+      sEmptyTable:"No forecastings registered"
+    },
+    fnDrawCallback: function(oSettings) {
+      $(".date-picker").datepicker({dateFormat: "mm/dd/yy"})
+    },
+    responsive: true
+  })
+
+  $("#forecastings_table").removeClass("no-footer")
+  $("#forecastings_table_filter").css("display", "none")
+  $("#forecastings_table_length label").css("display", "none")
+  $("#forecastings_table").next().remove()
+
+  $("#forecastings_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#forecastings_table_wrapper").children(".row").css("margin-left", "0")
+  $("#forecastings_table_wrapper").children(".row").css("margin-right", "0")
+
+  forecastings_table.on("draw.dt", function() {
+    $("form.parsley-form").parsley()
+  })
+
+  $("#save_forecastings").off("click").on("click", function() {
+    data = []
+    $("input.forecasting_row").each(function(index) {
+      vpd_country_id = $(this).val()
+      data.push({"vpd_country_id": vpd_country_id, "est_start_date": $("input#est_start_date_"+ vpd_country_id).val(), "recruitment_rate": $("input#recruitment_rate_"+ vpd_country_id).val()})
+    })
+
+    if (data.length == 0) {
+      $(".spinner").remove()
+      return false
+    }
+    
+    $.ajax({
+      type: "POST",
+      url:  "#{dashboard_trial_save_forecastings_path(@trial)}", 
+      data: {"forecastings": data}
+    }).success(function(data) {
+      $(".spinner").remove()
+
+      if (data.success) {
+        $("#popup_modal_title").text(data.success.msg)
+        $("#popup_modal_box .message").html("<p><strong class='text_blue'>"+ data.success.name + "</strong> has been successfully updated</p>")
+        $("#popup_modal_box").modal("show")
+
+        change_report_view(1, 0)
+      } else {
+        $("#popup_modal_title").text(data.failure.msg)
+        $("#popup_modal_box .message").html("<p>"+ data.failure.details +"</p>")
+      }
+      $("#popup_modal_box").modal("show")
+    }).fail(function(data) {
+      $(".spinner").remove()
+      $("#popup_modal_title").text("Failure")
+      $("#popup_modal_box .message").html("<p>Can't update forecastings now. Try again later</p>")
+      $("#popup_modal_box").modal("show")
+    }) 
+  })
+
+  function change_report_view(should_forecast, forecasting_now) {
+    if (should_forecast==1 && forecasting_now==0) { // should_forecast: true, forecasting_now: false in trial(when the user clicked 'Save Changes')
+      $(".report-panel").css("display", "none")
+      $("#create_forecast").text("Create Forecast").removeAttr("disabled")
+      $("#view_report").attr("disabled", "disabled")
+      if (page_timerId == null) page_timer()
+    } else if (should_forecast==1 && forecasting_now==1) { // should_forecast: true, forecasting_now: false in trial(when the user clicked 'Create forecast')
+      $(".report-panel").css("display", "none")
+      $("#create_forecast").text("Calculating...").attr("disabled", "disabled")
+      $("#view_report").attr("disabled", "disabled")
+      if (page_timerId == null) page_timer()
+    } else if (should_forecast==0 && forecasting_now==0) { // should_forecast: false, forecasting_now: false in trial(when Manual Forecasting is finished)
+      $(".report-panel").css("display", "")
+      $("#create_forecast").text("Create Forecast").attr("disabled", "disabled")
+      $("#view_report").removeAttr("disabled")
+    }
+  }
+  
+  $("#create_forecast").off("click").on("click", function() {
+    create_forecast(false)
+  })
+
+  $("#view_report").off("click").on("click", function() {
+    $(".report-panel").load("/dashboard/trial/#{@trial.id.to_s}/report?"+ report_params())
+  })
+
+  var page_timerId
+  
+  function page_timer() { 
+    page_timerId = setInterval(function() {
+      $.ajax({
+        type: "GET",
+        url:  "#{should_forecast_dashboard_trial_trial_path(@trial)}", 
+        data: {}
+      }).success(function(data) {
+        console.log("page_timerId", data.success.forecasting_now+", "+data.success.should_forecast+", "+page_timerId)
+        if (data.success && data.success.forecasting_now==0 && data.success.should_forecast==0) {
+          clearInterval(page_timerId)
+          page_timerId = null
+
+          change_report_view(0, 0)
+          $(".report-panel").load("/dashboard/trial/#{@trial.id.to_s}/report?"+ report_params())          
+        }
+      }).fail(function(data) {
+      })  
+    }, 5000)
+  }
+
+  $("#country").off("change").on("change", function() {
+    var url = "/dashboard/trial/#{@trial.id.to_s}/sites?vpd_country="+ $("select#country").val()
+    $("select#site").load(url)
+  })
+
+  $("select#option").change(function() {
+    if ($(this).val() == "Cumulative") {
+      $("select#from option:first-child").prop("selected", true)
+      $("select#from").attr("disabled", true)
+    } else {
+      $("select#from").attr("disabled", false)
+    }
+  })
+
+  $(function() {
+    if ("#{@trial.forecasting_now}" == "true"  &&  page_timerId == null) page_timer()
+    $(".report-panel").load("/dashboard/trial/#{@trial.id.to_s}/report?"+ report_params())
+  })
+
+  function report_params() {
+    var from        = $("select#from").val()
+    var to          = $("select#to").val()
+    var site        = $("select#site").val()
+    var event_id    = $("select#event_id").val()
+    var vpd_country = $("select#country").val()
+    var option      = $("select#option").val()
+    var url = "from="+ from +"&to="+ to +"&vpd_country="+ vpd_country
+    url += "&site="+ site +"&event_id="+ event_id +"&option="+ option
+
+    return url
+  }
+
+  $("#confirm_modal_box .modal-footer .btn-default").off("click").on("click", function() {
+    change_report_view(0, 0)
+  })
+
+  $("#confirm_modal_box .modal-footer #yes_btn").off("click").on("click", function() {
+    $("#confirm_modal_box").modal("hide")
+    create_forecast(true)
+  })
+
+  function create_forecast(force_forecast) {
+    $.ajax({
+      type: "POST",
+      url:  "#{dashboard_trial_create_forecast_path(@trial)}",
+      data: {"force_forecast": force_forecast}
+    }).success(function(data) {
+      $(".spinner").remove()
+
+      if (data.success) {
+        $("#popup_modal_title").text("Create Forecast")
+        $("#popup_modal_box .message").html("<p>"+ data.success.msg +" </p>")
+        $("#popup_modal_box").modal("show")
+
+        change_report_view(1, 1)
+      } else {
+        if (data.failure.forecasted) {
+          $("#confirm_modal_title").text("Create Forecast")
+          $("#confirm_modal_box .message").html("<p>"+ data.failure.msg +" Are you sure to create forecast again?</p>")
+          $("#confirm_modal_box").modal("show")
+        } else {
+          $("#popup_modal_title").text("Failure to Create Forecast")
+          $("#popup_modal_box .message").html("<p>"+ data.failure.msg +"</p>")
+          $("#popup_modal_box").modal("show")
+        }
+      }
+    }).fail(function(data) {
+      $(".spinner").remove()
+      $("#popup_modal_title").text("Failure to Create Forecast")
+      $("#popup_modal_box .message").html("<p>Can't create forecast now. Try again later</p>")
+      $("#popup_modal_box").modal("show")
+    }) 
+  }

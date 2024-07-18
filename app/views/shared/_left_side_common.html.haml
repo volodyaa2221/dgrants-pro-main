@@ -1,0 +1,10 @@
+%li
+  = link_to("<i class='fa fa-home fa-fw dd-menu__icon'></i>Home".html_safe, root_path)
+
+- if params[:action] == "profile"
+  %li{class: 'active'}
+    = link_to("<i class='fa fa-cog fa-fw dd-menu__icon'></i>Profile Settings".html_safe, "#")
+
+- if params[:action] == "todo_tasks"
+  %li{class: 'active'}
+    = link_to("<i class='fa fa-list-ul fa-fw dd-menu__icon'></i>ToDo Tasks".html_safe, "#")

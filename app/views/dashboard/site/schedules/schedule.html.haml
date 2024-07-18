@@ -1,0 +1,394 @@
+- disabled = !current_user.tcm_level_user?(@site)
+- mode = @schedule.nil? || @schedule.mode
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content{style: "padding:10px 20px"}
+
+              .heading.clearfix
+                .pull-left
+                  %h4.text_blue1 BUDGET
+                .pull-right
+                  .btn-group{role: "group"}
+                    .btn-group{role: "group"}
+                      %button.btn.btn-default#btn_editable{class: "#{mode ? 'active' : ''}", disabled: disabled} Editable
+                    .btn-group{role: "group"}
+                      - classes = mode ? "btn btn-default" : "btn btn-default active"
+                      = link_to "Payable", dashboard_site_new_authenticate_path(@site), remote: true, class: classes, id: "btn_payable"
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              #transaction.tab-pane.active
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 1
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8 CURRENCY
+                    .col-md-5.col-sm-4.col-4
+                      = text_field_tag :vpd_currency, @vpd_currency.code, class: :"form-control", disabled: true
+
+                -# .transactiontab_block
+                -#   .row
+                -#     .col-sm-1.col-1
+                -#       %span.sr-nu.mart6 2
+                -#     .col-md-6.col-sm-9.col-5
+                -#       %span.curr.mart8
+                -#         = "BUDGET TEMPLATE"
+                -#         = tooltip_link("Budget template can be changed at any time until the budget has been made payable for the first time.")
+                -#     .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                -#       .row
+                -#         .col-md-9.col-sm-5
+                -#           .input-group.parsley-validate.parsley-bind#for_tax_rate
+                -#             - trial_schedule_id = @schedule.trial_schedule.present? ? @schedule.trial_schedule.id : 0
+                -#             = select_tag :trial_schedule_id, options_for_select(@trial_schedules, trial_schedule_id), class: :"form-control", disabled: @schedule_activated || !mode
+                -#             = hidden_field_tag :schedule_activated, @schedule_activated
+                -#         .col-md-3.col-sm-7
+                -#           %button.btn.btn-primary.pull-right#save_tr_schedule{onclick: "saveSchedule(false, '')", disabled: @schedule_activated || !mode} Save
+                - trial_schedule_id = @schedule.trial_schedule.present? ? @schedule.trial_schedule.id : 0
+                = hidden_field_tag :trial_schedule_id, trial_schedule_id
+                = hidden_field_tag :schedule_activated, @schedule_activated
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 2
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "VAT/GST TAX RATE"
+                        = tooltip_link("Default tax rate (%) for new entries")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_tax_rate
+                            - tax_rate = (@schedule.present? && @schedule.tax_rate.present? && @schedule.tax_rate>0) ? @schedule.tax_rate : nil
+                            = text_field_tag :tax_rate, tax_rate, placeholder: "e.g. 10", class: :"form-control", disabled: disabled, "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right#save_tax_rate{onclick: "saveSchedule(false, '')", disabled: !mode} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 3
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "WITHHOLDING TAX RATE"
+                        = tooltip_link("Withholding tax applied to&nbsp;new invoices")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_withholding_rate
+                            - withholding_rate = (@schedule.present? && @schedule.withholding_rate.present? && @schedule.withholding_rate>0) ? @schedule.withholding_rate : nil
+                            = text_field_tag :withholding_rate, withholding_rate, placeholder: "e.g. 10", class: :"form-control", "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right#save_withholding_rate{onclick: "saveSchedule(false, '')", disabled: !mode} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 4
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "SITE OVERHEAD"
+                        = tooltip_link("Overhead applied to new invoices")
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group.parsley-validate.parsley-bind#for_withholding_rate
+                            - overhead_rate = (@schedule.present? && @schedule.overhead_rate.present? && @schedule.overhead_rate>0) ? @schedule.overhead_rate : nil
+                            = text_field_tag :overhead_rate, overhead_rate, placeholder: "e.g. 10", class: :"form-control", "data-parsley-type"=>"number", :"parsley-trigger"=>"keyup"
+                            %span.input-group-addon= "%"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right#save_overhead_rate{onclick: "saveSchedule(false, '')", disabled: !mode} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 5
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "HOLDBACK"
+                        = tooltip_link("% fees held back to completion (and cap)")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-md-4.col-sm-4{style:"padding-right:0"}
+                          .input-group
+                            - holdback_rate = (@schedule.present? && @schedule.holdback_rate.present? && @schedule.holdback_rate>0) ? @schedule.holdback_rate : nil
+                            = text_field_tag :holdback_rate, holdback_rate, placeholder: "e.g. 0", class: :"form-control"
+                            %span.input-group-addon= "%"
+                        .col-md-5.col-sm-4
+                          - holdback_amount = (@schedule.present? && @schedule.holdback_amount.present? && @schedule.holdback_amount>0) ? @schedule.holdback_amount : nil
+                          = text_field_tag :holdback_amount, holdback_amount, placeholder: "#{@symbol}CAP", class: :"form-control"
+                        .col-md-3.col-sm-4
+                          %button.btn.btn-primary.pull-right#save_holdback{onclick: "saveSchedule(false, '')", disabled: !mode} Save
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 6
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "MILESTONES"
+                        = tooltip_link("Payment terms for each non-patient based payable event (e.g. Reday to Enrol, IRB Approval)")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-sm-5
+                        .col-sm-7
+                          = link_to "Add ENTRY", new_dashboard_site_entry_path(@site)+"?entry_type=0", remote: true, class: :"btn btn-primary pull-right", id: :add_static_entry, disabled: !mode
+                  = render "static_entries"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 7
+                    .col-md-6.col-sm-9.col-5
+                      %span.curr.mart8
+                        = "VISITS & PROCEDURES"
+                        = tooltip_link("Payment terms for each patient related visit or precedure")
+                    .col-md-5.col-sm-11.col-4.col-md-offset-0.col-sm-offset-1
+                      .row
+                        .col-sm-5
+                        .col-sm-7
+                          = link_to "Add ENTRY", new_dashboard_site_entry_path(@site)+"?entry_type=1", remote: true, class: :"btn btn-primary pull-right", id: :add_patient_entry, disabled: !mode
+                  = render "patient_entries"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 8
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8
+                        = "PASSTHROUGH BUDGETS"
+                        = tooltip_link("Pre-agreed passthrough budgets for services such as advertising, travel etc.")
+                    .col-md-5.col-sm-4.col-4
+                      = link_to "Add ENTRY", new_dashboard_site_passthrough_budget_path(@site), remote: true, class: :"btn btn-primary pull-right", id: :add_passthrough_entry, disabled: !mode
+                  = render "passthrough_budgets"
+
+                .transactiontab_block
+                  .row
+                    .col-sm-1.col-1
+                      %span.sr-nu.mart6 9
+                    .col-md-6.col-sm-7.col-5
+                      %span.curr.mart8 PAYMENT TERMS
+                    .col-md-5.col-sm-11.col-4.col-sm-offset-1.col-md-offset-0
+                      .row
+                        .col-md-9.col-sm-5
+                          .input-group
+                            = select_tag :payment_terms, options_for_select(SiteSchedule::PAYMENT_TERM, @schedule.payment_terms), {class: :"form-control input-md"}
+                            %span.input-group-addon= "Days"
+                        .col-md-3.col-sm-7
+                          %button.btn.btn-primary.pull-right#save_payment_terms{onclick: "saveSchedule(false, '')", disabled: !mode} Save
+
+/ Modal
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+    
+
+:javascript
+  var staticEntriesTable, patientEntriesTable, passthroughBudgetsTable
+
+  new MyApp.spinner($("#right_main_content"), $("button.pull-right"), "click")
+
+  $(function() {
+    staticEntriesTable  = setup_data_table("static_entries")
+    patientEntriesTable = setup_data_table("patient_entries")
+    passthroughBudgetsTable = setup_data_table("passthrough_budgets")
+  })
+
+  $("#btn_editable").off("click").on("click", function() { 
+    if ($("#btn_editable").hasClass("active")) return false
+    spin_it($("#right_main_content"))
+    saveSchedule(true, {"mode": true})
+  })
+
+  $("#btn_payable").off("click").on("click", function() { 
+    if ($("#btn_payable").hasClass("active")) return false
+  })
+
+  function saveSchedule(mode, param) {
+    if (mode) {
+      data = param
+    } else {
+      data = {
+        "trial_schedule_id": $("#trial_schedule_id").val(),
+        "tax_rate": $("#tax_rate").val(),
+        "withholding_rate": $("#withholding_rate").val(),
+        "overhead_rate": $("#overhead_rate").val(),
+        "holdback_rate": $("#holdback_rate").val(),
+        "holdback_amount": $("#holdback_amount").val(),
+        "payment_terms": $("#payment_terms").val()
+      }
+    }
+    $.ajax({
+      type: "POST",
+      url:  "#{dashboard_site_save_schedule_path}", 
+      data: data
+    }).success(function(data) {
+      $(".spinner").remove()
+      if (data.success) {
+        if (data.success.refresh) {
+          $("#schedule_activated").val(data.success.ever_activated)
+          reloadSchedulePage(true)
+        } else if (data.success.ts_changed) {
+          $("li.active>a[href='#schedules']").trigger("click")
+        } else {
+          $("#popup_modal_title").text(data.success.msg)
+          $("#popup_modal_box .message").html(data.success.text)
+          $("#popup_modal_box").modal("show")
+        }
+      } else {
+        var element_id = data.failure.element_id
+        $("#"+ element_id).parent().parent().addClass("has-error")
+        error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+        $("#"+ element_id).parent().append(error)
+      }
+    }).fail(function(data) {
+      $(".spinner").remove()
+      console.log(data)
+    })  
+  }
+
+  function reloadSchedulePage(mode) {
+    if (mode) {
+      $("#btn_editable").addClass("active")
+      $("#btn_payable").removeClass("active")
+    } else {
+      $("#btn_editable").removeClass("active")
+      $("#btn_payable").addClass("active")
+    }
+    var schedule_activated = $("#schedule_activated").val() == "true"  ?  true : false
+    $("#trial_schedule_id").attr("disabled", schedule_activated || !mode)
+    $("#save_tr_schedule").attr("disabled", schedule_activated || !mode)
+    $("#save_tax_rate").attr("disabled", !mode)
+    $("#save_withholding_rate").attr("disabled", !mode)
+    $("#save_overhead_rate").attr("disabled", !mode)
+    $("#save_holdback").attr("disabled", !mode)
+    $("#add_static_entry").attr("disabled", !mode)
+    $("#add_patient_entry").attr("disabled", !mode)
+    $("#add_passthrough_entry").attr("disabled", !mode)    
+    $("#save_payment_terms").attr("disabled", !mode)
+    
+    staticEntriesTable.fnDraw()
+    patientEntriesTable.fnDraw()
+    passthroughBudgetsTable.fnDraw()
+  }
+
+  function setup_data_table(label) {
+    var targetCols = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    var unit = "Payment Entries"
+    if (label == "passthrough_budgets") {
+      targetCols = [0, 1, 2, 3, 4, 5]
+      unit = "Passthrough Budgets"
+    }
+    var table_id = label +"_data_table";
+    dt_table = $("#"+ table_id).dataTable({
+      sPaginationType: "simple",
+      lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+      paging: false,
+      bJQueryUI: true,
+      bProcessing: true,
+      bServerSide: true,
+      aoColumnDefs: [ { "bSortable": false, "aTargets": targetCols } ],
+      sAjaxSource: $('#'+ table_id).data('source'),
+      fnRowCallback: function(nRow, aData, iDisplayIndex) {
+        var id = aData[aData.length-1]
+        $(nRow).attr("id", id)
+        return nRow
+      },oLanguage: {
+        sEmptyTable: "No "+ unit +" registered"
+      },
+      responsive: true
+    })
+
+    $("#"+ table_id).removeClass("no-footer")
+    $("#"+ table_id +"_filter").css("display", "none")
+    $("#"+ table_id +"_length").css("display", "none")
+    $("#"+ table_id).next().remove()
+
+    $("#"+ table_id +"_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-left", "0")
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-right", "0")
+
+    return dt_table
+  }
+
+  var object_id = null, method = null, object = null
+  function update_data(id, method_val, class_name, model_name) {
+    object_id = id
+    method = method_val
+    object = model_name
+    var title = null
+    if (method) {
+      title = "Delete "+ class_name
+      msg   = "Are you sure to delete this "+ object +"? This cannot be reversed later."
+    } else {
+      title = "Disable "+ class_name
+      msg   = "Are you sure to disable this "+ object +"? This cannot be reversed later."
+    }
+    $("#confirm_modal_title").text(title)
+    $("#confirm_modal_box .message").html(msg)
+    $("#confirm_modal_box").modal("show")
+  }
+
+  $("#confirm_modal_box .modal-footer .btn-default").off("click").on("click", function() {
+    object_id = null
+    method    = null
+    object    = null
+  })
+
+  $("#confirm_modal_box .modal-footer #yes_btn").off("click").on("click", function() {
+    $("#confirm_modal_box").modal("hide")
+    if (object_id == null) return
+    var url = "/dashboard/site/#{@site.id.to_s}/entries/"
+    if (object == "passthrough budget") url = "/dashboard/site/#{@site.id.to_s}/passthrough_budgets/"
+
+    $.ajax({
+      type: "DELETE",
+      url:  url + object_id, 
+      data: {"delete": method}
+    }).success(function(data) {
+      $(".spinner").remove()
+      if (data.success) {
+        if (object == "payment entry") {
+          if (data.success.type == 0) staticEntriesTable.fnDraw()
+          else patientEntriesTable.fnDraw()
+        } else if (object == "passthrough budget") {
+          passthroughBudgetsTable.fnDraw()
+        }
+      }
+    }).fail(function(data) {
+      $(".spinner").remove()
+      console.log(data)
+    })
+  })
+
+  function goto_event_log(event_log_id) {
+    $("#nav__menu li>a[href='#event_log']").trigger("click")
+  }
+
+  function goto_invoice(url) {
+    ul.find("li").removeClass("active")
+    $("#nav__menu li>a[href='#invoices']").parent().addClass("active")
+
+    $.ajax({
+      type: "GET",
+      url: url,
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })

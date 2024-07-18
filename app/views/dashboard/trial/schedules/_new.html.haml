@@ -1,0 +1,25 @@
+.modal-dialog
+  .modal-content
+    = form_for(@schedule, url: dashboard_trial_schedules_path(@trial), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Add Template
+
+      .modal-body
+        .form-group
+          = f.label :name, "Template Name :", class: :"col-sm-4 control-label"
+          .col-sm-6.sub-sponsor-box
+            = f.text_field :name, placeholder: "e.g. CONTRACT", class: :"form-control input-sm", required: true
+
+        .form-group
+          = f.label :vpd_currency, "Currency :", class: "col-sm-4 control-label"
+          .col-sm-6.sub-sponsor-box
+            = f.select :vpd_currency, options_for_select(@currencies), {include_blank: false}, {name: "trial_schedule[vpd_currency]", class: :"form-control input-sm", required: true}
+            %span.help-block-title
+              %label.text_blue1 Currency cannot be changed later
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

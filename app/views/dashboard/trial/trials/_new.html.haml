@@ -1,0 +1,30 @@
+.modal-dialog
+  .modal-content
+    - url = @vpd.present? ? dashboard_trial_trials_path+"?vpd_id=#{@vpd.id.to_s}" : dashboard_trial_trials_path
+    = form_for(@trial, url: url, remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Add Trial
+
+      .modal-body
+        .form-group
+          = f.label :trial_id, "Trial ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :trial_id, placeholder: "e.g. TEST-001", required: true, class: :"form-control input-sm"
+        .form-group
+          = f.label :title, "Trial Short Name :", class: :"col-sm-4 control-label"
+          .col-sm-6.sub-sponsor-box
+            = f.text_field :title, placeholder: "e.g. A randomized control trial of...", class: :"form-control input-sm"
+        - if current_user.super_admin? && !@vpd.present?
+          .form-group
+            = f.label :vpd_id, "VPD :", class: :"col-sm-4 control-label"
+            .col-sm-6
+              = f.select :vpd_id, options_from_collection_for_select(Vpd.activated_vpds, :id, :name), {include_blank: true}, {class: :"form-control input-sm", required: true}
+              %span.help-block-title
+                %label.text_blue1 VPD cannot be changed later
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

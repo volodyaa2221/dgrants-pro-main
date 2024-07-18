@@ -1,0 +1,97 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12
+        #overlay
+
+        = form_for @user, url: update_profile_dashboard_users_path, remote: true, html:{class: :"form-virtical parsley-form", :"data-parsley-validate"=>'', id: "user_info_form"} do |f|
+          .card.card--padded{data: {:"match-height"=>"card"}}
+            .collapse.in.card__collapse
+              .card__content{data: {:"match-height"=>"card__content"}}
+                - if @user.errors.any?
+                  %ul{style: "list-style:none; color:red; padding-left:0"}
+                    - @user.errors.full_messages.each do |msg|
+                      %li= msg
+                = hidden_field_tag :type, "admin"
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :salutation
+                      = f.select :salutation, options_for_select(["Mr.", "Mrs."]), {}, {class: :"form-control"}
+                  .col-md-6.col-sm-6
+                    .form-group{class: "#{@user.errors.messages.to_s.include?('email') ? "has-error" : ''}"}
+                      = f.label :email, "Email Address"
+                      = f.email_field :email, placeholder: "new.user@example.com", class: :"form-control", :"data-parsley-trigger"=>"change", required:true
+                      = hidden_field_tag :user_id, @user.id   
+
+                  .clearfix         
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :first_name, "First Name"
+                      = f.text_field :first_name, placeholder: "John", class: :"form-control", required:true
+                  .col-md-6.col-sm-6  
+                    .form-group
+                      = f.label :last_name, "Last Name"
+                      = f.text_field :last_name, placeholder: "Smith", class: :"form-control", required:true          
+
+                  .clearfix 
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :organization, "Organization / Company"
+                      = f.text_field :organization, placeholder: "Organization", class: :"form-control", required:true
+                  .col-md-6.col-sm-6  
+                    .form-group
+                      =f.label :position, "Position (optional)"
+                      = f.text_field :position, placeholder: 'Position', class: :"form-control"
+
+                  .clearfix     
+                  .col-md-6.col-sm-6  
+                    .form-group
+                      = f.label :country
+                      = f.country_select(:country, [ "GB", "FR", "DE" ], {selected:f.object.country}, {class: :"form-control"})
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :phone, "Telephone (optional)"
+                      = f.text_field :phone, placeholder:"+1-9172678786", class: :"form-control"
+
+                  .clearfix
+                  .col-md-6.col-md-offset-3{style: "text-align: center;"}
+                    = f.submit "Save Changes", class: :"btn btn-primary"    
+            .clearfix      
+            %br/
+            - unless @user.vpd_level_user?
+              .col-md-12
+                .table-responsive
+                  %table#data_table.table.borderTB.footable
+                    %thead.bg_gray
+                      %tr.bg_gray
+                        %th{style: "width: 15%"} Trial ID
+                        %th{style: "width: 70%"} Trial Short Name
+                        %th{style: "width: 15%"} Role
+                    %tbody#trials_list
+                      - @user.roles.activated_roles.each do |role|
+                        - trial = role.trial
+                        %tr
+                          %td= trial.trial_id
+                          %td= trial.title 
+                          %td= role.role_label[1].html_safe
+
+:javascript
+  $(".parsley-form").parsley("validate");
+
+  $("#user_info_form").on("ajax:success", function(event, data, status, xhr) {    
+    if(data.success){
+      $("#popup_modal_title").text("Update");
+      $("#popup_modal_box .message").html(data.success.msg);
+      $("#popup_modal_box").modal("show");
+      
+    } else {
+      $("#trial_trial_id").parent().parent().addClass("has-error");
+      error = "<span class='help-block'><strong class='text_black'>Already taken</strong></span>"
+      $("#trial_trial_id").parent().append(error);
+
+      $("#popup_modal_title").text("Update");
+      $("#popup_modal_box .message").html(data.failure.msg);
+      $("#popup_modal_box").modal("show");
+    }
+  });

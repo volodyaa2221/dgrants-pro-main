@@ -1,0 +1,115 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12
+        #overlay
+
+        .row
+          = render "single_events"
+
+        .row
+          = render "patient_events"
+
+
+/ Modal
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  function setup_data_table(type) {
+    var table_id = type +"_events_table";
+    dt_table = $("#"+ table_id).dataTable({
+      // sPaginationType: "simple",
+      lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+      paging: false,
+      bJQueryUI: true,
+      bProcessing: true,
+      bServerSide: true,
+      bSort: false,
+      aaSorting:[],
+      aoColumnDefs: [ { "bSortable": false, "aTargets": [0,1,2,3,4] } ],
+      sAjaxSource: $('#'+ table_id).data('source'),
+      fnServerParams: function (aoData) {
+        var show_option = $("#"+ type +"_events_show_option").text();
+        aoData.push({name: "show_option", value: show_option});
+        aoData.push({name: "sSearch", value: $("#"+ type +"_events_key").val()});
+
+        if ($("#"+ type +"_events_initial_load").val() == 1) {
+          for (var i=0; i<aoData.length; i++) {
+            if (aoData[i].name == "iSortCol_0") aoData[i].value = 2;
+          }
+        }
+      },
+      fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+        var res = iStart +" to "+ iEnd + " of " + iTotal + " Events";
+        $("#"+ type +"_events_page_description").html(res);
+        return "";
+      },
+      fnRowCallback: function(nRow, aData, iDisplayIndex) {
+        $("#"+ type +"_events_initial_load").val(0);
+        var id = aData[aData.length-1];
+        $(nRow).attr("id", id);
+        return nRow;
+      },oLanguage: {
+        sEmptyTable: "No Event Types registered"
+      },
+      responsive: true
+    }).rowReordering({
+      sURL: "#{change_order_dashboard_vpd_events_path}",
+      sRequestType: "GET",
+      fnStartProcessingMode: function() {
+        spin_it($("table#data_table"));
+      },
+      fnEndProcessingMode : function() {
+        $(".spinner").remove();
+      }
+    });
+    
+    $("#"+ table_id).removeClass("no-footer");
+    $("#"+ table_id +"_filter").css("display", "none");
+    $("#"+ table_id +"_length").css("display", "none");
+    $("#"+ table_id).next().remove();
+
+    $("#"+ table_id +"_wrapper").find("div.row").css("margin-left", "").css("margin-right", "");
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-left", "0");
+    $("#"+ table_id +"_wrapper").children(".row").css("margin-right", "0");
+
+    return dt_table;
+  }
+
+  single_events_dt_table  = setup_data_table("single");
+  patient_events_dt_table = setup_data_table("patient");
+
+  $("#single_events_show_option").click(function() {
+    if ($(this).text() == "Include disabled"){
+      $(this).text("Exclude disabled");
+    }else{
+      $(this).text("Include disabled");
+    }    
+    single_events_dt_table.fnDraw();
+  });
+
+  $("#patient_events_show_option").click(function() {
+    if ($(this).text() == "Include disabled"){
+      $(this).text("Exclude disabled");
+    }else{
+      $(this).text("Include disabled");
+    }    
+    patient_events_dt_table.fnDraw();
+  });
+
+  $("#single_events_btn_search").click(function(){
+    single_events_dt_table.fnDraw();
+  });
+
+  $("#single_events_key").change(function(){
+    single_events_dt_table.fnDraw();
+  });
+
+  $("#patient_events_btn_search").click(function(){
+    patient_events_dt_table.fnDraw();
+  });
+
+  $("#patient_events_key").change(function(){
+    patient_events_dt_table.fnDraw();
+  });

@@ -1,0 +1,172 @@
+- editable = @site.trial.event_log_mode > 0 || current_user.tcm_level_user?(@site)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+              
+              .row
+                .col-lg-3.col-md-3.col-sm-3
+                  .form-group
+                    .input-group
+                      %input.form-control{type: "text", id: "key", placeholder: "Keyword..."}
+                        %span.input-group-btn
+                          %button.btn.btn-default{type: "button", id: "btn_search"}
+                            %i.fa.fa-search.fa-fw.dd-menu__icon
+
+                .col-lg-9.col-md-9.col-sm-9
+                  .payablebuttons
+                    = link_to "Log Event", new_dashboard_site_event_path(@site), remote: true, class: :"btn btn-primary sm-pull-right btn-add-modal", style: "width:150px;" if editable
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              .table-responsive
+                %table#data_table.table.borderTB.footable{width:"100%", data:{source: dashboard_site_events_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th{style:"width:10%"} Log ID
+                      %th{style:"width:15%"} Date
+                      %th{style:"width:15%"} Event ID
+                      %th{style:"width:30%"} Description
+                      %th{style:"width:10%"} Source
+                      %th{style:"width:15%"} Status
+                      %th{style:"width:5%"} Approved?
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;"} Include deleted
+
+/ Modal
+- if editable
+  #data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    order: [[1, "desc"]],
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [3, 4, 5, 6] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text();
+      aoData.push({name: "show_option", value: show_option})
+      aoData.push({name: "sSearch", value: $("#key").val()})
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal
+      $("#page_description").html(res)
+      return ""
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]
+      $(nRow).attr("id",id)
+      return nRow;
+    },oLanguage: {
+      sEmptyTable:"No events logged",
+      oPaginate: {
+        sPrevious: "&larr; Prev",
+        sNext: "Next &rarr;"
+      }
+    },
+    fnDrawCallback: function(oSettings) {
+      if ($("#page_description").siblings(".pager").size() > 0) {
+        $("#page_description").siblings(".pager").remove()
+      }
+      $("#data_table_paginate ul").addClass("pager sm-pull-right").removeClass("pagination").insertBefore($("#page_description"))
+    },
+    responsive: true
+  })
+  
+  $("#data_table").removeClass("no-footer")
+  $("#data_table_filter").css("display", "none")
+  $("#data_table_length label").css("display", "none")
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  $("#show_option").off("click").on("click", function() {
+    if ($(this).text() == "Include deleted"){
+      $(this).text("Exclude deleted")
+    }else{
+      $(this).text("Include deleted")
+    }    
+    dt_table.fnDraw()
+  })
+
+  $("#btn_search").click(function(){
+    dt_table.fnDraw()
+  })
+
+  $("#key").change(function(){
+    dt_table.fnDraw()
+  })
+
+  var event_id = null
+  function delete_log(id) {
+    event_id = id
+
+    $("#confirm_modal_title").text("Disable Log Entry")
+    $("#confirm_modal_box .message").html("<p>Are you sure to disable this log entry? This cannot be reversed later.</p>")
+    $("#confirm_modal_box").modal("show")
+  }
+
+  $("#confirm_modal_box .modal-footer .btn-default").off("click").on("click", function() {
+    event_id = null
+  })
+
+  $("#confirm_modal_box .modal-footer #yes_btn").off("click").on("click", function() {
+    $("#confirm_modal_box").modal("hide")
+    if (event_id == null) return
+
+    $.ajax({
+      type: "DELETE",
+      url:  "/dashboard/site/#{@site.id.to_s}/events/"+ event_id, 
+      data: {}
+    }).success(function(data) {
+      if (data.success) {
+        dt_table.fnDraw()
+      } else {
+        $("#popup_modal_title").text(data.failure.msg)
+        $("#popup_modal_box .message").html("<p>"+ data.failure.details +"</p>")
+        $("#popup_modal_box").modal("show")
+      }
+
+    }).fail(function(data) {
+      $("#popup_modal_title").text("Failure")
+      $("#popup_modal_box .message").html("<p>Can't update forecastings now. Try again later</p>")
+      $("#popup_modal_box").modal("show")
+    })
+  })
+
+  $("#right_main_content").off("click").on("click", ".btn-toggle-event", function() {
+    var active   = $(this).find(".active"), 
+        eventId  = active.data("id"), 
+        approved = active.data("approved") == "0" ? 1 : 0, 
+        url      = $(this).data("update-url")
+        _this    = $(this)
+
+    $.ajax({
+      type: "POST",
+      url: url,
+      data: { event_id: eventId, approved: approved }
+    }).done(function( data ) {
+      if (data.success) {
+        _this.closest("td").html("Yes")
+      } else {
+        $("#popup_modal_title").text("Failure")
+        $("#popup_modal_box .message").html("<p>"+data.failure.msg+"</p>")
+        $("#popup_modal_box").modal("show")
+      }
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  })

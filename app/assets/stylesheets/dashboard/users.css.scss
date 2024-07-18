@@ -1,0 +1,109 @@
+/*
+  Place all the styles related to the matching controller here.
+  They will automatically be included in application.css.
+*/
+
+.users {
+  .blank {
+    height:5px;
+  }
+
+  .line {
+    margin:0 0 10px;
+    height:1px;
+    border:1px solid #000;
+  }
+
+  .block {
+    margin:0 0 20px;
+  }  
+}
+
+#right_main_content {
+  table.dataTable {
+    thead {
+      tr {
+        th {
+          padding-left:  9px;
+          padding-right: 9px;
+        }
+        /* Use in case of including jquery-ui/autocomplete css */
+        // th.ui-state-default {
+        //   border-left: none;
+        //   border-right: none;
+        //   border-top: none;
+        // }
+        // th.ui-state-default.sorting_disabled {
+        //   background: none;
+        // }
+      }
+    }
+  }
+}
+
+/* For manual decoration of jquery-ui/autocomplete widget */
+.ui-autocomplete-input {
+  z-index: 1511;
+  position: relative;
+}
+
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1051 !important;
+  float: left;
+  display: none;
+  min-width: 160px;
+  _width: 160px;
+  padding: 4px 0;
+  margin: 2px 0 0 0;
+  list-style: none;
+  background-color: #ffffff;
+  border-color: #ccc;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+
+  .ui-menu-item {
+    padding-left: 5px;
+
+    a.ui-corner-all {
+      display: block;
+      padding: 3px 15px;
+      clear: both;
+      font-weight: normal;
+      line-height: 18px;
+      color: #555555;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+  }
+  .ui-state-hover, .ui-state-active {
+    color: #ffffff;
+    text-decoration: none;
+    background-color: #0088cc;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    background-image: none;
+  }
+
+  .ui-state-focus {
+    background: url("/assets/jquery-ui/ui-bg_glass_75_dadada_1x400.png") repeat-x scroll 50% 50% #dadada;
+    border: 1px solid #999999;
+    color: #212121;
+    font-weight: normal;
+  }
+}

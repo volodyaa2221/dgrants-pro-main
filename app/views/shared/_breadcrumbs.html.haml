@@ -1,0 +1,16 @@
+- trial_level_user = current_user.trial_level_user?
+.container-fluid
+  .row
+    .col-md-12
+      %h1
+        %ol#breadcrumbs.breadcrumb.hidden-xs
+          - if trial_level_user
+            = render 'shared/breadcrumb_trial_user'
+          - else
+            = render 'shared/breadcrumb_site_user'
+
+        %ol#breadcrumbs_xs.breadcrumb.visible-xs
+          - if trial_level_user
+            = render 'shared/breadcrumb_trial_user_xs'
+          - else
+            = render 'shared/breadcrumb_site_user_xs'

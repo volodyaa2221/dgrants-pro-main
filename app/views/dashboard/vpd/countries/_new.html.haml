@@ -1,0 +1,18 @@
+.modal-dialog
+  .modal-content
+    = form_for(@country, url: dashboard_vpd_countries_path, remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Add Country
+
+      .modal-body
+        .form-group
+          = f.label :name, "Country Name :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :name, options_from_collection_for_select(Country.activated_countries.sort_by!{|c| c.name.downcase}, :id, :name), {include_blank: true}, {class: :"form-control input-sm", required: true}
+
+        .modal-footer
+          = button_tag(type: :submit, class: :"btn btn-primary") do
+            Save
+            %i.fa.fa-angle-double-right
+          %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

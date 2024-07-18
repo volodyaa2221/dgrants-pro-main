@@ -1,0 +1,39 @@
+- disabled = !current_user.trial_editable?(@site.trial) && !@site.trial_associate?(current_user)
+.modal-dialog
+  .modal-content
+    = form_for(@passthrough, url: dashboard_site_passthroughs_path(@site), method: :post, remote: true, html:{class: :"form-horizontal parsley-form", multipart: true}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title ADD PASSTHROUGH
+
+      .modal-body
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_area :description, value: nil, placeholder: "e.g. Passthrough Description", class: :"form-control input-sm", required: true
+
+        .form-group
+          = f.label :site_passthrough_budget, "Budget :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :"passthrough[site_passthrough_budget]", options_for_select(@passthrough_budgets), {class: :"form-control input-sm", required: true}
+
+        .form-group
+          = f.label :amount, "Amount(#{@site.site_schedule.vpd_currency.code}) :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :amount, value: nil, placeholder: "e.g. 100", class: :"form-control input-sm", required: true, :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+        .form-group
+          = f.label :invoice_file, "File :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = file_field_tag :invoice_file, class: :"input-sm", style: "width:100%; text-overflow:ellipsis; padding: 0", required: true
+
+        .form-group
+          = f.label :status, "Status :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            %label.control-label Pending
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

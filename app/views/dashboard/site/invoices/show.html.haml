@@ -1,0 +1,161 @@
+- editable = current_user.site_editable?(@site)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content{style: "padding:10px 20px"}
+
+              .heading.clearfix
+                %h4.text_blue{style:"width: 100%"}
+                  = "INVOICE (#{@invoice.invoice_no})"
+                .col-md-12.col-sm-12{style: "padding-left:0"}
+                  %h4.text_blue{style: "margin-top:0"}= link_to("Back to All Invoices", "javascript: back_to_invoices()")
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+
+              .table-responsive
+                %table#data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_site_invoice_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th{style: "width:10%"} Tran ID
+                      %th{style: "width:40%"} Description
+                      %th{style: "width:15%"} Earned
+                      %th{style: "width:15%"} Holdback
+                      %th{style: "width:20%"} Payable
+                  %tbody
+
+              .clearfix
+              .table-wrap
+                = form_for(@invoice, url: dashboard_site_invoice_path, remote: true, html:{class: :"form-horizontal parsley-form edit-form"}) do |f|
+                  .invoice-table
+                    - payee_info = past_invoice_payee_info(@invoice)
+                    .row
+                      .col-sm-6
+                      -#   .invoice-pay
+                      -#     .invoice-to
+                      -#       %p PAY TO:
+                      -#     .invoice-address
+                      -#       = payee_info[0].html_safe
+                      -#       %table.table.table-condensed
+                      -#         %tbody
+                      -#           = payee_info[1].html_safe
+                      -#           %tr
+                      -#             %td.w30
+                      -#               %p Bank Name:
+                      -#             %td= payee_info[2].html_safe
+                      -#           %tr
+                      -#             %td
+                      -#               %p Bank Address:
+                      -#             %td= payee_info[3].html_safe
+                      .col-sm-6
+                        %table.table.no-margin-bottom
+                          %tbody
+                            %tr
+                              %td#invoice
+                                .col-sm-5
+                                  %h2 Please Pay:
+                                .col-sm-7
+                                  %h2= "#{@symbol} #{number_to_currency(@amount, unit: '')} "
+                                  %h3= "(incl. #{@symbol} #{number_to_currency(@tax, unit: '')} tax)"
+                            %tr
+                              %td#invoice{style: "border:none;padding-top:24px"}
+                                .col-sm-5
+                                  %h2 Status:
+                                - if editable
+                                  .col-sm-4{style: "color:orange"}
+                                    %h2
+                                      = f.select :status, options_for_select(@invoice_status, @invoice.status), {}, class: :"form-control input-sm"
+                                  .col-sm-3
+                                    = button_tag(type: :submit, id: :save_invoice, class: :"btn btn-primary btn-sm") do
+                                      %b SAVE
+                                - else
+                                  .col-sm-7{style: "color:orange"}
+                                    %h2= "In #{@invoice_status2[@invoice.status]}"
+                            %tr
+                              %td#invoice{style: "border:none"}
+                            %tr
+                              %td#invoice{style: "border:none"}
+                                .col-sm-5{style: "margin-top:4px"}
+                                  %h2 Invoice #:
+                                .col-sm-7
+                                  %h2= @invoice.invoice_no
+                            %tr
+                              %td#invoice{style: "border:none"}
+                            -# %tr
+                            -#   %td#invoice{style: "border:none"}
+                            -#     .col-sm-5{style: "margin-top:4px"}
+                            -#       %h2 Invoice Document:
+                            -#     .col-sm-7
+                            -#       - file = @invoice.invoice_file
+                            -#       - if file.present?
+                            -#         %h2
+                            -#           = invoice_file_link_with_icon(file, "white")
+                            -#       - else
+                            -#         %label N/A
+
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [0, 1, 2, 3, 4] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]
+      $(nRow).attr("id", id)
+      if (aData[aData.length-2] != null) $(nRow).css("color", aData[aData.length-2])
+      return nRow
+    },oLanguage: {
+      sEmptyTable:"No invoices logged"
+    },
+    responsive: true
+  })
+  
+  $("#data_table").removeClass("no-footer");
+  $("#data_table_filter").css("display", "none");
+  $("#data_table_length label").css("display", "none")
+  $("#data_table").next().remove()
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  function goto_schedule(type) {
+    $("#nav__menu li>a[href='#schedules']").trigger("click")
+  }
+
+  function back_to_invoices() {
+    $.ajax({
+      type: "GET",
+      url: "#{dashboard_site_invoices_path(@site)}",
+      data: {"type": "ajax"}
+    }).success(function(data) {
+      $("#right_main_content").html(data)
+      
+      positionFooter()
+    }).fail(function(data) {
+      location.href = "/authorization"
+    })
+  }
+
+  $("form.edit-form").on("ajax:success", function(event, data, status, xhr) {
+    $(".spinner").remove()
+    if (data.success) { 
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html("Invoice status has been successfully updated</p>")
+    } else {
+      $("#popup_modal_title").text("Failed To Update Status")
+      $("#popup_modal_box .message").html("<p>"+ data.failure.msg + "</p>")
+    }
+    $("#popup_modal_box").modal("show")
+  })

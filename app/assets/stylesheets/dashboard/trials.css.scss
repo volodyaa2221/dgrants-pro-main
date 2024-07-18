@@ -1,0 +1,60 @@
+/*
+  Place all the styles related to the matching controller here.
+  They will automatically be included in application.css.
+*/
+
+.well {
+  background-color: #e7f3fa;
+  border: 1px solid #EAF2F6;
+  padding: 15px;
+  .marB5 {
+    margin-bottom: 5px;
+  }
+  .payablebuttons {
+    .inLine{
+      width: 200px;
+      display: inline-block;
+      vertical-align: top;
+      .input-group {
+        border-collapse: separate;
+        display: table;
+        position: relative;
+        .input-group-btn {
+          font-size: 0;
+          position: relative;
+          white-space: nowrap;
+          .btn-gray {
+            background-color: #eee;
+            border-color: #c4bfbf;
+            color: #5c5c5c;
+          }
+        }
+      }      
+    }
+  }
+}
+
+.gray-box {
+  display: block;
+  padding: 10px;
+  font-size: 13px;
+  word-break: break-all;
+  word-wrap: break-word;
+  color: #666;
+  background-color: #fcfcfc;
+  border: 1px solid #E2E0E0;
+  border-radius: 4px;
+}
+
+.cont-wrap {
+  overflow: hidden;
+}
+
+.cont-wrap select {
+  margin-bottom: 5px;
+}
+
+.cont-txt {
+  float: left;
+  margin-top: 3px;
+}

@@ -1,0 +1,13 @@
+.table-responsive{style: "margin-top:10px"}
+  %table#passthrough_budgets_data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_trial_passthrough_budgets_path(format: :json)+ "?schedule=#{@schedule.id.to_s}"}}
+    %thead.bg_gray
+      %tr
+        %th BUDGET
+        %th $
+        %th MAX
+        %th $
+        %th MAX MONTHLY
+        %th
+    %tbody
+
+#passthrough_budgets__page_description

@@ -1,0 +1,12 @@
+.table-responsive{style: "margin-top:10px"}
+  %table#passthrough_budgets_data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_site_passthrough_budgets_path(format: :json)}}
+    %thead.bg_gray
+      %tr
+        %th BUDGET
+        %th $
+        %th MAX
+        %th $
+        %th MAX MONTHLY
+        %th $PAID TOTAL
+        %th
+    %tbody

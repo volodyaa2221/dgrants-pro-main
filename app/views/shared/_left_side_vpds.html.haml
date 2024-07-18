@@ -1,0 +1,15 @@
+- if params[:controller].include?("dashboard/vpd")
+  %li{class: "#{(params[:controller]=='dashboard/vpd/vpds' && params[:action]=='trials') ? 'active' : ''}"}
+    = link_to "<i class='fa fa-paperclip fa-fw dd-menu__icon'></i>Trials".html_safe, "#trails", data:{:"no-turbolink" => true, url: trials_dashboard_vpd_vpd_path(@vpd) + ajax_url_suffix}, class: :"event-button" 
+
+  %li{class: "#{params[:controller]=='dashboard/vpd/users' ? 'active' : ''}"}    
+    = link_to "<i class='fa fa-users fa-fw dd-menu__icon'></i>Directory".html_safe, "#vpd_users", data:{url: dashboard_vpd_users_path(@vpd) + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/vpd/events' ? 'active' : ''}"}    
+    = link_to "<i class='fa fa-pencil fa-fw dd-menu__icon'></i>Event Types".html_safe, "#events", data:{url: dashboard_vpd_events_path(@vpd) + ajax_url_suffix}, class: :"event-button"
+
+  %li{class: "#{params[:controller]=='dashboard/vpd/reports' ? 'active' : ''}"}
+    = link_to "<i class='fa fa-bar-chart fa-fw dd-menu__icon'></i>Reports".html_safe, "#reports", data:{url: dashboard_vpd_reports_path(@vpd) + ajax_url_suffix}, class: :"event-button"    
+
+  %li{class: "#{(params[:controller]=='dashboard/vpd/vpds' && params[:action]=='configs') ? 'active' : ''}"}
+    = link_to "<i class='fa fa-cogs fa-fw dd-menu__icon'></i>Setup".html_safe, "#setup", data:{url: configs_dashboard_vpd_vpd_path(@vpd) + ajax_url_suffix}, class: :"event-button"    

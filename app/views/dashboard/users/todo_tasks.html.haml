@@ -1,0 +1,104 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+              
+              .row
+                .col-md-2.col-sm-2
+                  .form-group
+                    = select_tag :trial_id, options_for_select(@trial_opts, " "), {class: :"form-control input-sm"}
+                
+                .col-md-2.col-sm-2
+                  .form-group
+                    = select_tag :country, options_for_select(@country_opts, " "), {class: :"form-control input-sm"}
+
+                .col-md-2.col-sm-2
+                  .form-group
+                    = select_tag :site_id, options_for_select(@site_opts, " "), {class: :"form-control input-sm"}
+
+                .col-md-2.col-sm-2
+                  .form-group
+                    = select_tag :task_type, options_for_select(@task_type_opts, " "), {class: :"form-control input-sm"}
+
+                .col-md-2.col-sm-2
+                  .payablebuttons
+                    = link_to "Apply Filter", "#", id: "btn_search", class: :"btn btn-primary"
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              .table-responsive
+                %table#data_table.table.borderTB.footable{width:"100%", data:{source:  todo_tasks_dashboard_users_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th{style:"width: 20%"} Trial&nbsp;ID
+                      %th{style:"width: 20%"} Country
+                      %th{style:"width: 20%"} Site ID
+                      %th{style:"width: 40%"} Description
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;"} &nbsp;
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      aoData.push({name: "sSearch", value: getSearchParams()});
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal;
+      $("#page_description").html(res);
+      return "";
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex){
+      var id = aData[aData.length-1];
+      $(nRow).attr("id",id);
+      return nRow;
+    }, oLanguage: {
+      sEmptyTable:"No tasks",
+      oPaginate: {
+        sPrevious: "&larr; Prev",
+        sNext: "Next &rarr;"
+      }
+    },
+    fnDrawCallback: function(oSettings) {
+      if ($("#page_description").siblings(".pager").size() > 0) {
+        $("#page_description").siblings(".pager").remove();
+      }
+      $("#data_table_paginate ul").addClass("pager sm-pull-right").removeClass("pagination").insertBefore($("#page_description"));
+    },
+    responsive: true
+  });
+  
+  $("#data_table").removeClass("no-footer");
+  $("#data_table_filter").css("display", "none");
+  $("#data_table_length label").css("display", "none");
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "");
+  $("#data_table_wrapper").children(".row").css("margin-left", "0");
+  $("#data_table_wrapper").children(".row").css("margin-right", "0");
+
+  $("#btn_search").click(function() {
+    dt_table.fnDraw();
+  });
+  
+  function getSearchParams() {
+    return $("#trial_id").val() + "," + $("#country").val() + "," + $("#site_id").val() + "," + $("#task_type").val();
+  }
+
+  $("select#trial_id").change(function() {
+    $("select#country").load("/dashboard/users/task_vpd_countries_opts?trial=" + $(this).val());
+    $("select#site_id").load("/dashboard/users/task_site_opts?trial=" + $(this).val());
+  });

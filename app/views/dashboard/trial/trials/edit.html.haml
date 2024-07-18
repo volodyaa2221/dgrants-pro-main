@@ -1,0 +1,84 @@
+- editable = current_user.trial_editable?(@trial)
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+
+        = form_for(@trial, url: dashboard_trial_trial_path(@trial), remote: true, html:{class: :"form-vertical parsley-form edit-trial"}) do |f|
+          .card.card--padded{data: {:"match-height"=>"card"}}
+            .collapse.in.card__collapse
+              %fieldset.fieldset
+                .row
+                  .col-md-12.col-sm-12
+                    .form-group
+                      = f.label :title, "Trial Short Name"
+                      = f.text_field :title, required: true, class: :"form-control", disabled: !editable
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :trial_id, "Trial ID"
+                      = f.text_field :trial_id, placeholder: "e.g. TEST-001", required: true, class: :"form-control", disabled: !editable
+
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :ctgov_nct, "CT.gov NCT# (optional)"
+                      = f.text_field :ctgov_nct, class: :"form-control", disabled: !editable
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :vpd_sponsor_id, "Sponsor"
+                      = f.select :vpd_sponsor_id, options_for_select(@sponsors, f.object.vpd_sponsor.present? ? f.object.vpd_sponsor.id : ''), {include_blank: true}, {class: :"form-control", disabled: !editable}
+
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :indication, "Indication"
+                      = f.select :indication, options_for_select(Trial::INDICATIONS.map{|indication|[indication, Trial::INDICATIONS.index(indication)]}, selected: f.object.indication.present? ? f.object.indication : ''), {include_blank: true}, { class: :"form-control", disabled: !editable}
+
+                .row
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :max_patients, "# Patients"
+                      = f.text_field :max_patients, placeholder: "e.g. 100", class: :"form-control", disabled: !editable, "data-parsley-type"=>"number"
+
+                  .col-md-6.col-sm-6
+                    .form-group
+                      = f.label :phase, "Phase"
+                      = f.select :phase, options_for_select(Trial::PHASES.map{|phase|[phase, Trial::PHASES.index(phase)]}, selected: f.object.phase.present? ? f.object.phase : ''), {include_blank: true}, { class: :"form-control", disabled: !editable}
+
+              - if editable
+                .card__footer
+                  .row{style: "margin-left:0;margin-right:0"}
+                    = f.submit "Save Changes", class: :"btn btn-primary ajax-button update-trial"
+
+
+:javascript
+  new MyApp.spinner($("#right_main_content"), $(".update-trial"), "click")
+  $(".update-trial").click(function() {    
+    $("#trial_trial_id").parent().parent().removeClass("has-error")
+    $("#trial_trial_id").parent().find(".help-block").remove()
+  })
+
+  $("form.edit-trial").on("ajax:success", function(event, data, status, xhr) {
+    $("#trial_trial_id").parent().find(".help-block").remove()
+    $(".spinner").remove()
+
+    if (data.success) {
+      $("#popup_modal_title").text(data.success.msg)
+      $("#popup_modal_box .message").html(data.success.text)
+      $("#popup_modal_box").modal("show")
+    } else {
+      if (data.failure) {
+        var element_id = data.failure.element_id;
+        $("#"+ element_id).parent().parent().addClass("has-error")
+        error = "<span class='help-block'><strong class='text_black'>"+ data.failure.msg + "</strong></span>"
+        $("#"+ element_id).parent().append(error)
+      }
+    }
+  })
+
+  $(function() {
+    $(".parsley-form").parsley("validate")
+  })

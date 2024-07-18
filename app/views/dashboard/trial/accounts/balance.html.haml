@@ -1,0 +1,98 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+              
+              .row
+                .col-lg-9.col-md-9.col-sm-9
+                  %label.text_blue= "ACCOUNT BALANCE:&nbsp;".html_safe
+                  %label.text_black= @account.balance>=0 ? "$ #{number_to_currency(@account.balance, unit: '')}" : "- $ #{number_to_currency(@account.balance.abs, unit: '')}"
+                  %br/
+                  %label.text_purple{style:"color:#c71585"}= @after_posting_label
+
+                .col-lg-3.col-md-3.col-sm-3
+                  .form-group
+                    .input-group
+                      %input.form-control{type: "text", id: "key", placeholder: "Keyword..."}
+                        %span.input-group-btn
+                          %button.btn.btn-default{type: "button", id: "btn_search"}
+                            %i.fa.fa-search.fa-fw.dd-menu__icon
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              .table-responsive
+                %table#data_table.table.borderTB.footable.background-colored-table{width:"100%", data:{source: dashboard_trial_balance_path(format: :json)}}
+                  %thead.bg_gray
+                    %tr
+                      %th Date
+                      %th Description
+                      %th Amount
+                      %th Status
+                  %tbody
+
+              #page_description
+              %a#show_option{href: "javascript://", style: "line-height:82px;visibility:hidden"} Include disabled
+
+          .card__footer
+            .row
+              .col-md-12
+                %label *Pending transactions show values based on today's dGrants exchange rates. Final amounts are only posted at the time of transfer.
+            .row
+              .col-md-12
+                %label= "*Please reference <b style=\"color:#c71585\">'#{@account.ref_id}'</b> in all wire transfers to DrugDev.".html_safe
+
+#data_modal.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :data_title}}
+
+
+:javascript
+  dt_table = $("#data_table").dataTable({
+    sPaginationType: "simple",
+    lengthMenu: [[15, 30, 50, -1], [15, 30, 50, "All"]],
+    bJQueryUI: true,
+    bProcessing: true,
+    bServerSide: true,
+    order: [0, 'desc'],
+    aoColumnDefs: [ { "bSortable": false, "aTargets": [3] } ],
+    sAjaxSource: $('#data_table').data('source'),
+    fnServerParams: function (aoData) {
+      var show_option = $("#show_option").text()
+      aoData.push({name: "show_option", value: show_option})
+      aoData.push({name: "sSearch", value: $("#key").val()})
+    },
+    fnInfoCallback: function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
+      var res = iStart +" to "+ iEnd + " of " + iTotal + " Transfers" 
+      $("#page_description").html(res)
+      return ""
+    },
+    fnRowCallback: function(nRow, aData, iDisplayIndex) {
+      var id = aData[aData.length-1]    
+      $(nRow).attr("id", id)
+      if (aData[aData.length-2] == 0) $(nRow).css("color", "#c71585")
+      return nRow
+    },oLanguage: {
+      sEmptyTable:"No transfers registered"
+    },
+    responsive: true
+  })
+  
+  $("#data_table").removeClass("no-footer")
+  $("#data_table_filter").css("display", "none")
+  $("#data_table_length label").css("display", "none")
+  $("#data_table").next().remove()
+
+  $("#data_table_wrapper").find("div.row").css("margin-left", "").css("margin-right", "")
+  $("#data_table_wrapper").children(".row").css("margin-left", "0")
+  $("#data_table_wrapper").children(".row").css("margin-right", "0")
+
+  $("#btn_search").click(function() {
+    dt_table.fnDraw()
+  })
+
+  $("#key").change(function() {
+    dt_table.fnDraw()
+  })  

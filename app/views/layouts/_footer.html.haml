@@ -1,0 +1,50 @@
+#footer
+  .footer.footer--page
+    .container-fluid
+      .row
+        .col-md-12
+          %ul{class: "list-inline no-margin-bottom"}
+            %li= link_to "Terms", terms_path 
+            %li= link_to "Privacy", privacy_path
+            %li
+              %a{:href => "http://www.drugdev.org", :target => "_blank"} © DrugDev 2016
+
+/ Notification Dialog
+#popup_modal_box.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :popup_modal_title}}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{type: :button, aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4#popup_modal_title.modal-title
+      .modal-body
+        %p.message
+      .modal-footer
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} OK
+
+/ Confirmation Dialog
+#confirm_modal_box.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :popup_modal_title}}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{type: :button, aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4#popup_modal_title.modal-title Confirm
+      .modal-body
+        %p.message
+      .modal-footer
+        %button#yes_btn.btn.btn-primary{type: :button} Yes
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} No
+
+/ Confirmation Dialog 2
+#confirm_modal_box2.modal.fade{role: :dialog, tabindex: "-1", aria:{hidden: true, labelledby: :popup_modal_title}}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{type: :button, aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4#popup_modal_title.modal-title Confirm
+      .modal-body
+        %p.message
+      .modal-footer
+        %button#yes_btn.btn.btn-primary{type: :button} Yes
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} No
+
+#spinner

@@ -1,0 +1,34 @@
+.modal-dialog
+  .modal-content
+    - if @site.site_schedule.present?
+      = form_for(@transaction, url: dashboard_site_holdback_path(@site), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+        .modal-header
+          %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+          %h4.modal-title#data_title Holdback Release
+
+        .modal-body
+          .form-group
+            %label.col-sm-10.control-label= "How much holdback do you wish to release?(0 - #{@site.site_schedule.currency.symbol} #{@holdback.round(2)})"
+
+          .form-group
+            = f.label :retained, "Holdback Release Amount :", class: :"col-sm-6 control-label"
+            .col-sm-4
+              = f.text_field :retained, value: nil, placeholder: "e.g. 1000", class: :"form-control input-sm", required: true, "data-parsley-type"=>"number", "data-parsley-min"=>"0", "data-parsley-max"=>"#{@holdback.round(2)}"
+
+        .modal-footer
+          = button_tag(type: :submit, class: :"btn btn-primary") do
+            Save
+            %i.fa.fa-angle-double-right
+          %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel
+    - else 
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Holdback Release
+
+      .modal-body
+        .form-group
+          %label= "Please set the Schedule and Currency."
+
+      .modal-footer
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Close
+  

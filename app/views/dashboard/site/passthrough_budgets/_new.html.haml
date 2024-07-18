@@ -1,0 +1,28 @@
+- currency_code = @site.site_schedule.vpd_currency.code
+.modal-dialog
+  .modal-content
+    = form_for(@budget, url: dashboard_site_passthrough_budgets_path(@site), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Add Passthrough Budget Entry
+
+      .modal-body
+        .form-group
+          = f.label :name, "Budget Name:", class: :"col-sm-5 control-label"
+          .col-sm-6
+            = f.text_field :name, value: nil, placeholder: "e.g. advertising", class: :"form-control input-sm", required: true
+
+        .form-group
+          = f.label :max_amount, "Max. Total (#{currency_code}):", class: :"col-sm-5 control-label"
+          .col-sm-6
+            = f.text_field :max_amount, value: nil, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+        .form-group
+          = f.label :monthly_amount, "Max. Monthly (#{currency_code}):", class: :"col-sm-5 control-label"
+          .col-sm-6
+            = f.text_field :monthly_amount, value: nil, placeholder: "e.g. 100", class: :"form-control input-sm", :"data-parsley-pattern" => "^[-+]?[0-9]*([.]?[0-9]*)?$", :"data-parsley-error-message" => "This should be a valid number."
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

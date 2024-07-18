@@ -1,0 +1,24 @@
+.mail-header  
+  = image_tag(root_url + ActionController::Base.helpers.asset_path("logo.png"), height:30)
+
+.mail-body
+  - if @resource.member_type == Role::ROLE[:super_admin] 
+    = render "confirmation_super_admin_setup"
+  - elsif @resource.member_type == Role::ROLE[:vpd_admin] 
+    = render "confirmation_vpd_admin_setup"
+  - elsif @resource.member_type == Role::ROLE[:trial_admin]  ||  @resource.member_type == Role::ROLE[:trial_readonly]
+    = render "confirmation_trial_admin_setup"
+  - elsif @resource.member_type == Role::ROLE[:trial_associate] 
+    = render "confirmation_trial_associate_setup"
+  - elsif @resource.member_type == Role::ROLE[:site_admin] || @resource.member_type == Role::ROLE[:site_readonly]
+    = render "confirmation_site_admin_setup"
+  - elsif @resource.member_type == Role::ROLE[:site_user]
+    = render "confirmation_site_user_setup"
+
+  %p= "The #{Dgrants::Application::CONSTS[:app_name]} Team"
+  %p= link_to Dgrants::Application::CONSTS[:app_host], Dgrants::Application::CONSTS[:app_host]
+
+
+:javascript
+  elem=document.getElementById("message_headers");
+  elem.remove();

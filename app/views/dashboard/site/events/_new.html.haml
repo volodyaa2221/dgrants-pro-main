@@ -1,0 +1,53 @@
+.modal-dialog
+  .modal-content
+    = form_for(@event, url: dashboard_site_events_path(@site), remote: true, html:{class: :"form-horizontal parsley-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Log Event
+
+      .modal-body
+        .form-group
+          = f.label :event_log_id, "Event Log ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :event_log_id, placeholder: "00001", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :event_id, "Event ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.select :event_id, options_from_collection_for_select(@trial_events, :event_id, :event_id, selected: @selected_trial_event), {}, {class: :"form-control input-sm", required: true}
+
+        = hidden_field_tag :patient_id_field
+        = hidden_field_tag :site_event_patient_id, nil, name: "site_event[patient_id]"
+
+        .form-group#select_patient_formgroup{style: "display: none"}
+          = f.label :patient_id_select, "Patient ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :patient_id_select, options_for_select(@patient_ids), {class: :"form-control input-sm"}
+
+        .form-group#select_next_patient_formgroup{style: "display: none"}
+          = f.label :patient_id_text, "Patient ID :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = text_field_tag :patient_id_text, nil, placeholder: "e.g. 0001", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :description, "Description :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_area :description, value: @event_descriptions[:CONTRACT], placeholder: "e.g. Event Description", class: :"form-control input-sm"
+
+        - date = (Time.now).strftime('%m/%d/%Y')
+        .form-group
+          = f.label :happened_at, "Date :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.text_field :happened_at, {value: date, placeholder: "e.g. #{date}", class: :"form-control input-sm date-picker", :"data-type" => "date", :"data-provide" => "datepicker", :"data-parsley-pattern" => "^[0-9]{1,2}[/]{1}[0-9]{1,2}[/]{1}[0-9]{4}$", :"data-parsley-error-message" => "No valid date", required: true}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel
+
+
+:javascript
+  $(document).ready(function() {
+    $(".date-picker").datepicker({dateFormat: "mm/dd/yy"})
+  })

@@ -1,0 +1,39 @@
+.modal-dialog
+  .modal-content
+    = form_for(@user, url: dashboard_vpd_users_path, remote: true, html:{class: :"form-horizontal parsley-form invite-form"}) do |f|
+      .modal-header
+        %button.close{type: :"button", aria:{hidden: true}, data:{dismiss: :modal}} ×
+        %h4.modal-title#data_title Invite VPD User
+
+      .modal-body
+        .form-group
+          = f.label :email, "Email Address :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = f.email_field :email, placeholder: "e.g. new.user@example.com", required: true, :"data-parsley-trigger"=>"change", class: :"form-control input-sm"
+
+        .form-group
+          = f.label :user_role, "User Type :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :user_role, options_for_select(@user_roles), {class: :"form-control input-sm"}
+
+        .form-group#trial_group{style: "display:none"}
+          = f.label :trial, "Trial :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            = select_tag :trial, options_for_select(@trial_opts), {class: :"form-control input-sm"}
+
+        .form-group#site_group{style: "display:none"}
+          = f.label :sites, "Site :", class: :"col-sm-4 control-label"
+          .col-sm-6
+            - if @site_opts.present? 
+              - size = @site_opts.count > 8  ?  8 : @site_opts.count
+            - else 
+              - size = 1
+            = select_tag :sites, options_for_select(@site_opts), {class: :"form-control input-sm", multiple: true, size: size}
+
+        = hidden_field_tag :promote_to, :false, {name: :"user[promote_to]"}
+
+      .modal-footer
+        = button_tag(type: :submit, class: :"btn btn-primary") do
+          Save
+          %i.fa.fa-angle-double-right
+        %button.btn.btn-default{type: :button, data:{dismiss: :modal}} Cancel

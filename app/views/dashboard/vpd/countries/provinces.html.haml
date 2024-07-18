@@ -1,0 +1,9 @@
+#order_state_code_wrapper
+  - country = Carmen::Country.coded(@vpd_country.code)
+  - if country.present? && country.subregions?
+    = subregion_select(:order, :state_code, @vpd_country.code)
+  - else
+    - if country.name == "Hong Kong"
+      %option{value: "HK"} Hong Kong
+    - else
+      %option Please select a state/province

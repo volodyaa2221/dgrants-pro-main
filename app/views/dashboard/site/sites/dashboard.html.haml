@@ -1,0 +1,41 @@
+%section
+  .container-fluid
+    .row
+      .col-md-12{style: "padding:0"}
+        #overlay
+          
+        .card.card--padded.card--collapsible
+          .card__header
+            .card__header__content
+              
+              .row
+                .col-lg-12
+                  %h4.text_blue Site Dashboard
+                  / %label= @dashboard_url
+
+          .collapse.in.card__collapse
+            .card__content.card__content--unpadded{style: "padding:20px;"}
+              %iframe.full_size{src: "#{@dashboard_url}", style: "width:100%;border:none;min-height:100px;display:block"}
+
+
+:javascript
+  function res_iframe() {
+    if ($(window).width() > 767) { 
+      var wH = $(window).height()
+      var hH = $("header#header").height() 
+      var bH = $(".header--page").height() + 30 // padding: 30
+      var fH = $("#footer").height() + 14 // padding: 14 
+      var tH = $(".card__header").height() + 32 // margin: 32
+      var cH = hH + bH + fH + tH + 45 // padding: 45
+
+      $("iframe.full_size").height(wH - cH)
+    }
+  }
+
+  $(document).ready(function() {
+    res_iframe()
+  })
+
+  $(window).resize(function() {
+    res_iframe()
+  })
